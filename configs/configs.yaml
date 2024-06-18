@@ -15,3 +15,7 @@ SCALE: 0.25
 KEYWORDS: ['scarp', 'boundary', 'layered deposits', 'exposure']
 SEASON: 'Northern summer'
 
+# Darwin
+API_KEY: "qCzK_ya.6BNmgaY92_wxTpWEojTSFv_GHi4HVkWU"
+DSET: "SCARPS"
+TEAM: "Planetary Geodesy"

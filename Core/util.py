@@ -1,4 +1,4 @@
-import shapefile as shp
+# import shapefile as shp
 import geojson as gj
 import numpy as np
 from hdbscan import HDBSCAN
@@ -6,33 +6,33 @@ from sklearn.cluster import DBSCAN
 
 from configs import CONF
 
-def qgis_shp_layer(data, fname, geom = 'poly'):
+# def qgis_shp_layer(data, fname, geom = 'poly'):
 
-    fpath = f'{CONF.RDR_DIR}/{fname}.shp'
-    # Create a shapefile writer
-    with shp.Writer(fpath) as f:
-        if geom == 'poly':
-            f.shapeType = shp.POLYGON
+#     fpath = f'{CONF.RDR_DIR}/{fname}.shp'
+#     # Create a shapefile writer
+#     with shp.Writer(fpath) as f:
+#         if geom == 'poly':
+#             f.shapeType = shp.POLYGON
             
-            # Define the fields
-            f.field('ID', 'N')  # Numeric field for polygon ID
-            f.field('Name', 'C')  # Character field for polygon name
+#             # Define the fields
+#             f.field('ID', 'N')  # Numeric field for polygon ID
+#             f.field('Name', 'C')  # Character field for polygon name
             
-            # Add polygons with unique IDs
-            for idx, val in data.iterrows():
-                f.record(ID = idx, Name = val.PRODUCT_ID)
-                f.poly([[val.C1, val.C2, val.C3, val.C4, val.C1]])
+#             # Add polygons with unique IDs
+#             for idx, val in data.iterrows():
+#                 f.record(ID = idx, Name = val.PRODUCT_ID)
+#                 f.poly([[val.C1, val.C2, val.C3, val.C4, val.C1]])
 
-        elif geom == 'point':
-            f.shapeType = shp.POINT
+#         elif geom == 'point':
+#             f.shapeType = shp.POINT
             
-            # Define the fields
-            f.field('CLUSTER', 'N')
+#             # Define the fields
+#             f.field('CLUSTER', 'N')
 
-            # Add points with unique CLUSTER IDs
-            for idx, val in data.iterrows():
-                f.record(ID = val.CLUSTER)
-                f.point(val.CENTER[0], val.CENTER[1])
+#             # Add points with unique CLUSTER IDs
+#             for idx, val in data.iterrows():
+#                 f.record(ID = val.CLUSTER)
+#                 f.point(val.CENTER[0], val.CENTER[1])
 
 def qgis_geojson_layer(data, fname, geom = 'poly'):
     fpath = f'{CONF.RDR_DIR}/{fname}.geojson'

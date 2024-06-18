@@ -25,4 +25,7 @@ class Config():
         self.conf.BBOX_DIR = f'{self.conf.QGIS_DIR}/bbox'
         self.conf.RDR_DIR = f'{self.conf.QGIS_DIR}/rdr'
 
+        self.conf.SEG_IMG_DIR = f'{self.conf.DATA_DIR}/SemSeg/raw/images'
+        self.conf.SEG_MSK_DIR = f'{self.conf.DATA_DIR}/SemSeg/raw/masks'
+
         return self.conf

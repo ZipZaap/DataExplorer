@@ -8,8 +8,6 @@ from shapely.ops import unary_union
 from shapely.strtree import STRtree
 import shapely.wkt
 
-import shapefile as shp
-
 
 from .util import planetocentric2map, qgis_geojson_layer, line_intersection, cluster_centroids, get_centroid
 from configs import CONF
