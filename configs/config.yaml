@@ -1,0 +1,43 @@
+---
+### PATHS
+DATA_DIR: 'data'
+
+URL: 'https://hirise-pds.lpl.arizona.edu/PDS'
+FILES: ['INDEX/RDRCUMINDEX.TAB','INDEX/RDRCUMINDEX.LBL']
+
+### FILTERS
+# basic
+columns: ['PRODUCT_ID','FILE_NAME_SPECIFICATION','RATIONALE_DESC',
+        'OBSERVATION_START_TIME', 'MAP_SCALE', 'SOLAR_LONGITUDE', 
+        'CORNER1_LATITUDE','CORNER1_LONGITUDE','CORNER2_LATITUDE','CORNER2_LONGITUDE',
+        'CORNER3_LATITUDE','CORNER3_LONGITUDE','CORNER4_LATITUDE','CORNER4_LONGITUDE']
+min_lat: 78
+scale: 0.25
+keywords: ['scarp']
+season: 'Northern summer'
+
+# temporal stacks
+min_years: 2
+mys: []
+consecutive: False
+
+# clustering
+algorithm: 'dbscan'
+min_samples: 2
+epsilon: 2000
+
+# Sequence
+filter_sequence: [
+    "load_df",
+    "latitude_filter",
+    "scale_filter",
+    "season_filter",
+    "cluster_filter",
+    "my_filter",
+    "allignment_filter",
+    "save_df"
+]
+
+### MAPPING
+# pygmt
+resolution: '10m'

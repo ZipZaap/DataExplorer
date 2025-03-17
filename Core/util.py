@@ -1,109 +1,125 @@
-# import shapefile as shp
-import geojson as gj
+import os
+from datetime import datetime
+
+import requests
 import numpy as np
-from hdbscan import HDBSCAN
-from sklearn.cluster import DBSCAN
+import pandas as pd
+import geojson as gj
+from tqdm import tqdm
 
-from configs import CONF
+from configs.config_parser import Config
 
-# def qgis_shp_layer(data, fname, geom = 'poly'):
-
-#     fpath = f'{CONF.RDR_DIR}/{fname}.shp'
-#     # Create a shapefile writer
-#     with shp.Writer(fpath) as f:
-#         if geom == 'poly':
-#             f.shapeType = shp.POLYGON
-            
-#             # Define the fields
-#             f.field('ID', 'N')  # Numeric field for polygon ID
-#             f.field('Name', 'C')  # Character field for polygon name
-            
-#             # Add polygons with unique IDs
-#             for idx, val in data.iterrows():
-#                 f.record(ID = idx, Name = val.PRODUCT_ID)
-#                 f.poly([[val.C1, val.C2, val.C3, val.C4, val.C1]])
-
-#         elif geom == 'point':
-#             f.shapeType = shp.POINT
-            
-#             # Define the fields
-#             f.field('CLUSTER', 'N')
-
-#             # Add points with unique CLUSTER IDs
-#             for idx, val in data.iterrows():
-#                 f.record(ID = val.CLUSTER)
-#                 f.point(val.CENTER[0], val.CENTER[1])
-
-def qgis_geojson_layer(data, fname, geom = 'poly'):
-    fpath = f'{CONF.RDR_DIR}/{fname}.geojson'
-
-    features = []
-    for idx, val in data.iterrows():
-        if geom == 'poly':
-            polygon = gj.Polygon([[val.C1, val.C2, val.C3, val.C4, val.C1]])
-            features.append(gj.Feature(geometry=polygon, properties={"ID": idx, "Name": val.PRODUCT_ID}))
-        elif geom == 'point':
-            point = gj.Point(val.CENTER)
-            features.append(gj.Feature(geometry=point, properties={"CLUSTER": val.CLUSTER}))
-
-    # Create a GeoJSON FeatureCollection
-    feature_collection = gj.FeatureCollection(features)
-    # Write the GeoJSON file
-    with open(fpath, 'w') as f:
-        gj.dump(feature_collection, f)
+CONF = Config('configs/config.yaml')
 
 
-def planetocentric2map(LAT, LON):
-    x = round(2*3376.2*np.tan(np.pi/4 - np.radians(LAT/2))*np.sin(np.radians(LON)) * 1000, 2)
-    y = round(-2*3376.2*np.tan(np.pi/4 - np.radians(LAT/2))*np.cos(np.radians(LON)) * 1000, 2)
-    return (x, y)
+def download_index(url: str, 
+                   filepaths: list[str], 
+                   savedir: str, 
+                   reload: bool = False
+                   ) -> None:
+    """
+    Download files from the given URL if they do not exist locally or if reload is True.
 
-# calculate the center of the image on the 2D map
-def line_intersection(line1, line2):
-    xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
-    ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
+    Args:
+        url (str): The base URL to download files from.
+        filepaths (list[str]): A list of PDS relative filepaths.
+        savedir (str): The directory where downloaded files are saved.
+        reload (bool): Forces download even if the file exists locally.
+    """
 
-    def det(a, b):
-        return a[0] * b[1] - a[1] * b[0]
+    for relative_path in filepaths:
+        filename = relative_path.split('/')[-1]
+        local_path = os.path.join(savedir, filename)
 
-    div = det(xdiff, ydiff)
-    if div == 0:
-       raise Exception('lines do not intersect')
+        if not os.path.exists(local_path) or reload:
+            head_response = requests.head(f'{url}/{relative_path}')
 
-    d = (det(*line1), det(*line2))
-    x = round(det(d, xdiff) / div, 2)
-    y = round(det(d, ydiff) / div, 2)
-    return (x, y)
+            if head_response.status_code == 200:
+                size = int(head_response.headers.get('Content-Length'))
 
-def cluster_centroids(df, algotype = 'dbscan'):
-    if algotype == 'hdbscan':
-        clusterer = HDBSCAN(min_cluster_size=2, min_samples=1, cluster_selection_method = 'leaf', cluster_selection_epsilon = 2700)
-        clusterer.fit(df.CENTER.tolist())
-    elif algotype == 'dbscan':
-        clusterer = DBSCAN(eps=2700, min_samples=2)
-        clusterer.fit(df.CENTER.tolist())
-    df.loc[:,'CLUSTER'] = clusterer.labels_
+                if use_stream := size > 1e7:  # 10MB
+                    response = requests.get(f'{url}/{relative_path}', stream=use_stream)
+                    block_size = int(1e5)  # 100KB per chunk
 
-    return df
+                    progress_bar = tqdm(total=size, unit='iB', unit_scale=True)
+                    with open(local_path, 'wb') as f:
+                        for data in response.iter_content(block_size):
+                            progress_bar.update(len(data))
+                            f.write(data)
+                    progress_bar.close()
+                else:
+                    response = requests.get(f'{url}/{relative_path}', stream=use_stream)
+                    with open(local_path, 'wb') as f:
+                        f.write(response.content)
+                print(f"{filename} downloaded successfully.")
+            else:
+                print(f"Failed to download {filename}. Status code: {head_response.status_code}")
+        else:
+            print(f"{filename} already exists. Set `reload = True` to force download.")
 
-def get_centroid(x):
-    x = np.round(np.mean(np.vstack(x), axis = 0), 2)
-    return (x[0], x[1])
 
-def extract_imIDs(fname, sv_txt = False):
-    # Load the GeoJSON file
-    fpath = f'{CONF.RDR_DIR}/{fname}.geojson'
-    with open(fpath, 'r') as f:
-        data = gj.load(f)
+def arc2psp(LON: pd.Series, LAT: pd.Series) -> list[tuple[float, float]]:
+    """
+    Convert planetocentric coordinates to map coordinates.
 
-    imIDs = []
-    for feature in data.features:
-        imIDs.append(feature.properties['Name']) #.replace('_RED', '')
+    Args:
+        LON (pd.Series): Series of longitudes.
+        LAT (pd.Series): Series of latitudes.
 
-    if sv_txt:
-        with open('imIDs.txt', 'w') as f:
-            for item in imIDs:
-                f.write("%s\n" % item)
-    else:
-        return imIDs
-    
+    Returns:
+        list[tuple[float, float]]: List of (x, y) map coordinates.
+    """
+    x = 2 * 3376.2 * np.tan(np.pi / 4 - np.radians(LAT / 2)) * np.sin(np.radians(LON)) * 1000
+    y = -2 * 3376.2 * np.tan(np.pi / 4 - np.radians(LAT / 2)) * np.cos(np.radians(LON)) * 1000
+    return np.round(x, 2), np.round(y, 2)
+
+
+def utc2my(ot: str) -> int:
+    """
+    Convert a UTC datetime string to a Mars year.
+
+    Args:
+        ot (str): A UTC datetime string in the format '%Y-%m-%dT%H:%M:%S'.
+
+    Returns:
+        mars_year (int): The Mars year computed from the reference date.
+    """
+    reference_date = datetime(1955, 4, 11)
+    obs_date = datetime.strptime(ot.strip(), '%Y-%m-%dT%H:%M:%S')
+    days_since_reference = abs((reference_date - obs_date).days)
+    mars_year = int(days_since_reference / 687)
+    return mars_year
+
+
+def is_sequence(sequence: np.ndarray, min_length: int) -> list:
+    """
+    Identify a subsequence of consecutive integers within the given sequence 
+    that meets the minimum length requirement.
+
+    Args:
+        sequence (np.ndarray): An array of integers.
+        min_length (int): The minimum consecutive sequence length required.
+
+    Returns:
+        result (list): A list containing the longest subsequence found that meets or exceeds min_length.
+    """
+    sorted_seq = sorted(sequence.tolist())    
+    result = []
+    start = 0
+
+    for i in range(1, len(sorted_seq) + 1):
+        if i == len(sorted_seq) or sorted_seq[i] != sorted_seq[i - 1] + 1:
+            if i - start >= min_length:
+                result.extend(sorted_seq[start:i])
+            start = i
+    return result
+
+
+def print_stats(x, y, total_width=66):
+    x_str = str(x)
+    y_str = str(y)
+    num_dots = total_width - len(x_str) - len(y_str)
+    if num_dots < 1:
+        num_dots = 1
+    dots = '.' * num_dots
+    print(f'{x_str} {dots} {y_str}')

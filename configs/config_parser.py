@@ -1,31 +1,35 @@
 import os
 import yaml
+from .validators import validate_and_log
 
-class AttrDict(dict):
-    def __init__(self, *args, **kwargs):
-        super(AttrDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
-
-class Config():
-    def __init__(self, cfgpath: str):  
-        self.conf = AttrDict()
-        with open(cfgpath) as file:
-            yaml_cfg = yaml.load(file, Loader=yaml.FullLoader)
-        self.conf.update(yaml_cfg)
-
-    def getConfig(self) -> dict:
+class Config:
+    def __init__(self, cfgpath: str):
         """
-        Initializes some additional internal variables; based on user input in config.yaml;
-        Performs a few tests to ensure that the configuration is valid
-        """    
-        self.conf.TAB_PATH = f'{self.conf.DATA_DIR}/HiRISE/index/RDRCUMINDEX.TAB'
-        self.conf.LBL_PATH = f'{self.conf.DATA_DIR}/HiRISE/index/RDRCUMINDEX.LBL'
+        Initialize the configuration object by loading a YAML file,
+        validating its content, and setting attributes accordingly.
+        """
+        with open(cfgpath) as file:
+            yaml_conf = yaml.load(file, Loader=yaml.FullLoader)
+            validate_and_log(yaml_conf)
 
-        self.conf.QGIS_DIR = f'{self.conf.DATA_DIR}/qgis/qgis_layer'
-        self.conf.BBOX_DIR = f'{self.conf.QGIS_DIR}/bbox'
-        self.conf.RDR_DIR = f'{self.conf.QGIS_DIR}/rdr'
+        for key, value in yaml_conf.items():
+            setattr(self, key, value)
 
-        self.conf.SEG_IMG_DIR = f'{self.conf.DATA_DIR}/SemSeg/raw/images'
-        self.conf.SEG_MSK_DIR = f'{self.conf.DATA_DIR}/SemSeg/raw/masks'
+        self._set_paths()
 
-        return self.conf
+    def _set_paths(self):
+        """
+        Set configuration paths based on the loaded configuration.
+        """
+        # Default directories
+        self.QGIS_DIR = os.path.join(self.DATA_DIR, "geojson")
+        self.INDX_DIR = os.path.join(self.DATA_DIR, "index")
+        self.MAPS_DIR = os.path.join(self.DATA_DIR, "maps")
+
+        for directory in [self.QGIS_DIR, self.INDX_DIR, self.MAPS_DIR]:
+            os.makedirs(directory, exist_ok=True)
+
+        # Default filepaths
+        self.TAB_PATH = os.path.join(self.INDX_DIR, "RDRCUMINDEX.TAB")
+        self.LBL_PATH = os.path.join(self.INDX_DIR, "RDRCUMINDEX.LBL")
+        self.FILTERED_PATH = os.path.join(self.INDX_DIR, "FILTERED.TAB")

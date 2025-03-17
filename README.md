@@ -1,0 +1,112 @@
+# HiRISE Data Explorer
+
+This repository provides Python tools for filtering, retrieving, and mapping images captured by the High Resolution Imaging Science Experiment (HiRISE) camera onboard the Mars Reconnaissance Orbiter (MRO). Designed for planetary scientists, researchers, and enthusiasts, this toolkit streamlines the process of exploring multi-year image data and identifying areas of interest on the Martian surface.
+
+## :key: Key Features
+
+1. **Custom Filters and Image Retrieval**  
+   Effortlessly filter and retrieve large sets of HiRISE images based on user-defined criteria. These custom filters allow you to refine queries by location, date, viewing geometry, and more.
+
+2. **DBSCAN Clustering for Imaging Hotspots**  
+   Identify multi-year imaging hotspots using Density-Based Spatial Clustering of Applications with Noise (DBSCAN). By grouping overlapping or closely spaced images, you can reveal areas of Mars with repeated HiRISE coverage.
+
+3. **Shapely-Based Stack Selection**  
+   Leverage the geometric capabilities of [Shapely](https://shapely.readthedocs.io/) to handle overlapping images. Automatically choose the best stacks from intersecting footprints and easily incorporate them into your data analysis or map displays.
+
+4. **Visualization with PyGMT and QGIS**  
+   Explore and share your results via robust visualization tools. Plot clustered hotspots with [PyGMT](https://www.pygmt.org/) or import your data into [QGIS](https://qgis.org/) for advanced cartographic work and interactive spatial analysis.
+
+## :rocket: Getting Started
+
+1. Clone the repository:
+
+    ```bash
+    git clone https://github.com/your-username/ReliefContours.git
+    ```
+
+2. Install PyTorch and make sure cuda is enabled:
+
+    ```bash
+    conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+    ```
+
+    ```console
+    $ python
+    >>> import torch
+    >>> torch.cuda.is_available()
+    True
+    ```
+
+3. Create a virtual envirnement & install the rest of the required dependencies
+
+    ```bash
+    conda env create -f requirements.yml
+    ```
+
+## :open_file_folder: Repository Structure
+
+Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain the image metadata) are created and populated automatically, unless an exisiting storage path is specified in `configs.yaml`.
+
+```text
+├───configs
+│   ├──config.yaml -----------------------> File with defaults parameters
+│   ├──config_parser.py ------------------> Defines Config() class which stores the defaults
+│   └──validators.py ---------------------> Defines validation logic and logging behavior
+|
+├───Core
+│   ├──filter.py -------------------------> Image filtering tools
+│   ├──mapper.py -------------------------> Tools for visualiztion in QGIS/PyGMT
+│   └──util.py----------------------------> Misc utility functions
+|
+├───data
+│   ├───geojson --------------------------> Storage for qgis .geojson files
+│   ├───index ----------------------------> Storage for PDS .TAB & .LBL files
+│   └───maps -----------------------------> Storage for PyGMT .png files
+|
+├───main.ipynb ---------------------------> Jupyter Notebook with examples
+├───requirements.yml ---------------------> Core dependencies
+└───README.md
+```
+
+## :hammer_and_wrench: Basic Usage
+
+1. **As module import**
+
+    ```python
+    from Core.filter import RdrFilter
+    from Core.mapper import PyGMT, save_qgis_layer
+
+    # initialize class instances
+    explorer = RdrFilter()
+    pygmt = PyGMT()
+
+    # load df and perfrom latitude filtering without commiting the changes
+    explorer.load_df()
+    df = explorer.latitude_filter(commit = False)
+
+    # render map with PyGMT and save to qgis layer
+    pygmt.show_on_map(df, target = 'img_centroid', filename = 'allignment_flt')
+    save_qgis_layer(df, target = 'img_centroid', filename = 'allignment_flt')
+
+    # filter again, this time using custom LAT and saving the changes
+    explorer.latitude_filter(min_lat = 80)
+
+    # apply the rest of the filters with their default parameters
+    explorer.scale_filter()
+    explorer.season_filter()
+    explorer.cluster_filter()
+    explorer.my_filter()
+    explorer.allignment_filter()
+
+    # Show the logged parameters and save the filtered DataFrame
+    print(explorer.local_conf)
+    explorer.save_df()
+    ```
+
+2. **As standalone script**
+
+    ```bash
+    python filter.py
+    ```
+
+    Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
