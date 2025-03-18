@@ -45,8 +45,6 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
 ## :open_file_folder: Repository Structure
 
-Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain the image metadata) are created and populated automatically, unless an exisiting storage path is specified in `configs.yaml`.
-
 ```graphql
 ├───configs/
 │   ├──config.yaml ---------------------- # File with defaults parameters
@@ -112,8 +110,8 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
     python filter.py
     ```
 
-> [!NOTE]
-> Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
+> [!TIP]
+> Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
 
 ## :earth_americas: Mapping examples
 
@@ -149,11 +147,17 @@ ssd a safasf  for af asf  i sa asf
 
 <img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
 
-This is the PyGMT output from the initial latitude filter with `min_lat = 78`.
+This is the PyGMT output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
 
+**Code:**
 ```python
 df = explorer.latitude_filter(commit = False)
 pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+```text
+LATITUDE FILTER ............. 5904 images
 ```
 
 <br clear="all">
