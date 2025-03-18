@@ -115,33 +115,27 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
 ## :earth_americas: PyGMT mapping examples
 
-<!-- <p align="center">
-  <img src="data/maps/latitude_flt.png" width="250" />
-  <img src="data/maps/scale_flt.png" width="250" />
-  <img src="data/maps/season_flt.png" width="250" />
-</p>
+<details>
+<summary  style="font-size: 1.2em;"> <b>Latitude filter<b> </summary>
 
-<p align="center">
-  <img src="data/maps/latitude_flt.png" width="250" />
-  <img src="data/maps/scale_flt.png" width="250" />
-  <img src="data/maps/season_flt.png" width="250" />
-</p> -->
+<img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
 
-<!-- | Image 1 | Image 2 |
-|---------|---------|
-| ![Alt](data/maps/latitude_flt.png) | ![Alt](data/maps/latitude_flt.png) |
-| ![Alt](data/maps/latitude_flt.png) | ![Alt](data/maps/latitude_flt.png) | -->
+This is the output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
 
-<!-- <details>
-<summary> Latitude filter</summary>
+**Code:**
 
 ```python
-ssd a safasf  for af asf  i sa asf
+df = explorer.latitude_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
 ```
 
-![Alt text](data/maps/latitude_flt.png)
+**Output:**
 
-</details> -->
+```text
+LATITUDE FILTER ............. 5904 images
+```
+
+</details>
 
 ### Latitude filter
 
