@@ -109,8 +109,8 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
     python filter.py
     ```
 
-    > [!NOTE]
-    > Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
+> [!NOTE]
+> Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
 
 ## :earth_americas: Mapping examples
 
