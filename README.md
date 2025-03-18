@@ -137,8 +137,6 @@ LATITUDE FILTER ............. 5904 images
 
 </details>
 
-<br clear="all">
-
 <details>
 <summary> Scale filter </summary>
 
