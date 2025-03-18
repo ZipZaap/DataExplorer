@@ -153,11 +153,11 @@ df = explorer.latitude_filter(commit = False)
 pygmt.show_on_map(df, target = 'img_rectangle', filename = 'allignment_flt')
 ```
 
-<div style="clear: both;"></div>
+<br clear="all">
 
 ### Other filter
 
 <img align="right" width="300" height="300" src="data/maps/latitude_flt.png">
 This is the code you need to align images to the left.
 
-<div style="clear: both;"></div>
+<br clear="all">
