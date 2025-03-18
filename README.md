@@ -109,12 +109,37 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
     python filter.py
     ```
 
-    Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
+    > [!NOTE]
+    > Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
 
 ## :earth_americas: Mapping examples
 
+<!-- <p align="center">
+  <img src="data/maps/latitude_flt.png" width="250" />
+  <img src="data/maps/scale_flt.png" width="250" />
+  <img src="data/maps/season_flt.png" width="250" />
+</p>
+
 <p align="center">
   <img src="data/maps/latitude_flt.png" width="250" />
-  <img src="data/maps/latitude_flt.png" width="250" />
-  <img src="data/maps/latitude_flt.png" width="250" />
-</p>
+  <img src="data/maps/scale_flt.png" width="250" />
+  <img src="data/maps/season_flt.png" width="250" />
+</p> -->
+
+<!-- | Image 1 | Image 2 |
+|---------|---------|
+| ![Alt](data/maps/latitude_flt.png) | ![Alt](data/maps/latitude_flt.png) |
+| ![Alt](data/maps/latitude_flt.png) | ![Alt](data/maps/latitude_flt.png) | -->
+
+<!-- <details>
+<summary> Latitude filter</summary>
+
+```python
+ssd a safasf  for af asf  i sa asf
+```
+
+![Alt text](data/maps/latitude_flt.png)
+
+</details> -->
+
+<img align="right" width="300" height="300" src="data/maps/latitude_flt.png">
