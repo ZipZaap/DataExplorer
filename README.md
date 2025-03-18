@@ -144,20 +144,20 @@ ssd a safasf  for af asf  i sa asf
 
 ### Latitude filter
 
-<img align="right" width="300" height="300" src="data/maps/latitude_flt.png">
+<img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
 
 This is the PyGMT output from the initial latitude filter with `min_lat = 78`.
 
 ```python
 df = explorer.latitude_filter(commit = False)
-pygmt.show_on_map(df, target = 'img_rectangle', filename = 'allignment_flt')
+pygmt.show_on_map(df, target = 'img_rectangle')
 ```
 
 <br clear="all">
 
 ### Other filter
 
-<img align="right" width="300" height="300" src="data/maps/latitude_flt.png">
+<img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
 This is the code you need to align images to the left.
 
 <br clear="all">
