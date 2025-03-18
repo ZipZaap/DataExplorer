@@ -68,6 +68,9 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
 └───README.md
 ```
 
+> [!NOTE]
+> Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain the image metadata) are created and populated automatically, unless an exisiting storage path is specified in `configs.yaml`.
+
 ## :hammer_and_wrench: Basic Usage
 
 1. **As module import**
