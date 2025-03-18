@@ -116,7 +116,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 ## :earth_americas: PyGMT mapping examples
 
 <details>
-<summary  style="font-size: 1.5em;"> <b>Latitude filter<b> </summary>
+<summary> Latitude filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
 
@@ -137,28 +137,8 @@ LATITUDE FILTER ............. 5904 images
 
 </details>
 
-### Latitude filter
-
-<img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
-
-This is the output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
-
-**Code:**
-
-```python
-df = explorer.latitude_filter(commit = False)
-pygmt.show_on_map(df, target = 'img_rectangle')
-```
-
-**Output:**
-
-```text
-LATITUDE FILTER ............. 5904 images
-```
-
-<br clear="all">
-
-### Scale filter
+<details>
+<summary> Scale filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/scale_flt.png">
 
@@ -177,9 +157,10 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 SCALE FILTER ................ 3699 images
 ```
 
-<br clear="all">
+</details>
 
-### Season filter
+<details>
+<summary> Season filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
@@ -198,9 +179,10 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 SEASON FILTER ................ 2081 images
 ```
 
-<br clear="all">
+</details>
 
-### Cluster filter
+<details>
+<summary> Cluster filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/cluster_flt.png">
 
@@ -219,11 +201,10 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 CLUSTER FILTER ................ 1503 images
 ```
 
-<br clear="all">
+</details>
 
-<!-- ![Alt text](data/maps/clusters_sector.png "image title") -->
-
-### Keyword filter
+<details>
+<summary> Keyword filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/keyword_flt.png">
 
@@ -242,9 +223,10 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 KEYWORD FILTER ................ 354 images
 ```
 
-<br clear="all">
+</details>
 
-### Mars Year filter
+<details>
+<summary> Mars Year filter </summary>
 
 <img align="left" width="282" height="282" src="data/maps/my_flt.png">
 
@@ -263,4 +245,4 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 MY FILTER ................ 334 images
 ```
 
-<br clear="all">
+</details>
