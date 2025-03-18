@@ -113,7 +113,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 > [!TIP]
 > Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
 
-## :earth_americas: Mapping examples
+## :earth_americas: PyGMT mapping examples
 
 <!-- <p align="center">
   <img src="data/maps/latitude_flt.png" width="250" />
@@ -147,24 +147,61 @@ ssd a safasf  for af asf  i sa asf
 
 <img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
 
-This is the PyGMT output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
+This is the output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
 
 **Code:**
+
 ```python
 df = explorer.latitude_filter(commit = False)
 pygmt.show_on_map(df, target = 'img_rectangle')
 ```
 
 **Output:**
+
 ```text
 LATITUDE FILTER ............. 5904 images
 ```
 
 <br clear="all">
 
-### Other filter
+### Scale filter
 
-<img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
-This is the code you need to align images to the left.
+<img align="left" width="300" height="300" src="data/maps/scale_flt.png">
+
+HiRISE dataset contains images with resolutions of `1`, `0.5` or `0.25` m/pxl. We set `scale = 0.25` to keep only the high-res products.
+
+**Code:**
+
+```python
+df = explorer.scale_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+SCALE FILTER ................ 3699 images
+```
+
+<br clear="all">
+
+### Season filter
+
+<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. In this example we set `season = Northern Summer`.
+
+**Code:**
+
+```python
+df = explorer.season_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+SEASON FILTER ................ 2081 images
+```
 
 <br clear="all">
