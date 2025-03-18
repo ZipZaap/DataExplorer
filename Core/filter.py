@@ -342,11 +342,4 @@ if __name__ == '__main__':
         for filter in CONF.filter_sequence:
             getattr(explorer, filter)()
     else:
-        explorer.load_df()
-        explorer.latitude_filter()
-        explorer.scale_filter()
-        explorer.season_filter()
-        explorer.cluster_filter()
-        explorer.my_filter()
-        explorer.allignment_filter()
-        explorer.save_df()
+        raise ValueError('Define a non-empty filter_sequence in `configs.yaml`.')

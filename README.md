@@ -48,20 +48,20 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain the image metadata) are created and populated automatically, unless an exisiting storage path is specified in `configs.yaml`.
 
 ```text
-├───configs
+├───configs/
 │   ├──config.yaml -----------------------> File with defaults parameters
 │   ├──config_parser.py ------------------> Defines Config() class which stores the defaults
 │   └──validators.py ---------------------> Defines validation logic and logging behavior
 |
-├───Core
+├───Core/
 │   ├──filter.py -------------------------> Image filtering tools
 │   ├──mapper.py -------------------------> Tools for visualiztion in QGIS/PyGMT
 │   └──util.py----------------------------> Misc utility functions
 |
-├───data
-│   ├───geojson --------------------------> Storage for qgis .geojson files
-│   ├───index ----------------------------> Storage for PDS .TAB & .LBL files
-│   └───maps -----------------------------> Storage for PyGMT .png files
+├───data/
+│   ├───geojson/ -------------------------> Storage for qgis .geojson files
+│   ├───index/ ---------------------------> Storage for PDS .TAB & .LBL files
+│   └───maps/ ----------------------------> Storage for PyGMT .png files
 |
 ├───main.ipynb ---------------------------> Jupyter Notebook with examples
 ├───requirements.yml ---------------------> Core dependencies
@@ -110,3 +110,6 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
     ```
 
     Note: this is useful for quick filtering, e.g. with a custom configs.yaml.
+
+## :earth_americas: Mapping examples
+

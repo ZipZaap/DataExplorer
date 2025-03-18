@@ -94,7 +94,7 @@ class PyGMT:
             else:
                 raise ValueError("Invalid target! Choose one of: `img_rectangle`, `img_centroid`, `cluster_centroid`.")
             
-        fig.plot(data=tmp.name, fill="greenyellow", pen="0.2p,black", style=style, transparency=20)
+        fig.plot(data=tmp.name, fill="cyan", pen="0.2p,black", style=style, transparency=20)
         fig.show(width=700)
         
         if filename:
