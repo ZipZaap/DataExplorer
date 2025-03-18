@@ -189,7 +189,70 @@ SCALE FILTER ................ 3699 images
 
 <img align="left" width="300" height="300" src="data/maps/season_flt.png">
 
-Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. In this example we set `season = Northern Summer`.
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+
+**Code:**
+
+```python
+df = explorer.season_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+SEASON FILTER ................ 2081 images
+```
+
+<br clear="all">
+
+### Cluster filter
+
+<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+
+**Code:**
+
+```python
+df = explorer.season_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+SEASON FILTER ................ 2081 images
+```
+
+<br clear="all">
+
+### Mars Year filter
+
+<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+
+**Code:**
+
+```python
+df = explorer.season_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+SEASON FILTER ................ 2081 images
+```
+
+<br clear="all">
+
+### Allignment filter
+
+<img align="left" width="280" height="280" src="data/maps/season_flt.png">
+
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
 
 **Code:**
 
