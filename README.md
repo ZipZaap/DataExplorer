@@ -116,7 +116,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 ## :earth_americas: PyGMT mapping examples
 
 <details>
-<summary  style="font-size: 1.2em;"> <b>Latitude filter<b> </summary>
+<summary  style="font-size: 1.5em;"> <b>Latitude filter<b> </summary>
 
 <img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
 
