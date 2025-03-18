@@ -47,7 +47,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
 Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain the image metadata) are created and populated automatically, unless an exisiting storage path is specified in `configs.yaml`.
 
-```text
+```graphql
 ├───configs/
 │   ├──config.yaml -----------------------> File with defaults parameters
 │   ├──config_parser.py ------------------> Defines Config() class which stores the defaults
