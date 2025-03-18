@@ -145,7 +145,7 @@ ssd a safasf  for af asf  i sa asf
 
 ### Latitude filter
 
-<img align="left" width="300" height="300" src="data/maps/latitude_flt.png">
+<img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
 
 This is the output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
 
@@ -166,7 +166,7 @@ LATITUDE FILTER ............. 5904 images
 
 ### Scale filter
 
-<img align="left" width="300" height="300" src="data/maps/scale_flt.png">
+<img align="left" width="282" height="282" src="data/maps/scale_flt.png">
 
 HiRISE dataset contains images with resolutions of `1`, `0.5` or `0.25` m/pxl. We set `scale = 0.25` to keep only the high-res products.
 
@@ -187,7 +187,7 @@ SCALE FILTER ................ 3699 images
 
 ### Season filter
 
-<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
 Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
 
@@ -208,7 +208,7 @@ SEASON FILTER ................ 2081 images
 
 ### Cluster filter
 
-<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
 Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
 
@@ -229,7 +229,7 @@ SEASON FILTER ................ 2081 images
 
 ### Mars Year filter
 
-<img align="left" width="300" height="300" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
 Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
 
@@ -250,7 +250,7 @@ SEASON FILTER ................ 2081 images
 
 ### Allignment filter
 
-<img align="left" width="280" height="280" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
 Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
 
