@@ -113,7 +113,21 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 > [!TIP]
 > Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
 
-## :earth_americas: PyGMT mapping examples
+## :factory: Example use-case 
+
+In this example use-case we're looking to investigate the seasonal ice dynamics of the North Polar Layered Deposits (NPLD). For these purposes we need to isolate the HiRISE images of NPLD scraps, specifically focusing on locations that have continuos multi-year coverage. We use the following set of parameters:
+
+```json
+{'latitude_filter': {'min_lat': 78},
+ 'scale_filter': {'scale': 0.25},
+ 'season_filter': {'season': 'Northern summer'},
+ 'cluster_filter': {'algorithm': 'dbscan', 'min_samples': 2, 'epsilon': 2000},
+ 'keyword_filter': {'keywords': ['scarp']},
+ 'my_filter': {'min_years': 2, 'mys': [], 'consecutive': False},
+ 'allignment_filter': {}}
+```
+
+### Filter sequence:
 
 <details>
 <summary> Latitude filter </summary>
