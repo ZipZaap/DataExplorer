@@ -49,22 +49,22 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
 
 ```graphql
 ├───configs/
-│   ├──config.yaml -----------------------> File with defaults parameters
-│   ├──config_parser.py ------------------> Defines Config() class which stores the defaults
-│   └──validators.py ---------------------> Defines validation logic and logging behavior
+│   ├──config.yaml ---------------------- # File with defaults parameters
+│   ├──config_parser.py ----------------- # Defines Config() class which stores the defaults
+│   └──validators.py -------------------- # Defines validation logic and logging behavior
 |
 ├───Core/
-│   ├──filter.py -------------------------> Image filtering tools
-│   ├──mapper.py -------------------------> Tools for visualiztion in QGIS/PyGMT
-│   └──util.py----------------------------> Misc utility functions
+│   ├──filter.py ------------------------ # Image filtering tools
+│   ├──mapper.py ------------------------ # Tools for visualiztion in QGIS/PyGMT
+│   └──util.py--------------------------- # Misc utility functions
 |
 ├───data/
-│   ├───geojson/ -------------------------> Storage for qgis .geojson files
-│   ├───index/ ---------------------------> Storage for PDS .TAB & .LBL files
-│   └───maps/ ----------------------------> Storage for PyGMT .png files
+│   ├───geojson/ ------------------------ # Storage for qgis .geojson files
+│   ├───index/ -------------------------- # Storage for PDS .TAB & .LBL files
+│   └───maps/ --------------------------- # Storage for PyGMT .png files
 |
-├───main.ipynb ---------------------------> Jupyter Notebook with examples
-├───requirements.yml ---------------------> Core dependencies
+├───main.ipynb -------------------------- # Jupyter Notebook with examples
+├───requirements.yml -------------------- # Core dependencies
 └───README.md
 ```
 
