@@ -189,7 +189,7 @@ SCALE FILTER ................ 3699 images
 
 <img align="left" width="282" height="282" src="data/maps/season_flt.png">
 
-Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = 'Northern Summer'`.
 
 **Code:**
 
@@ -208,63 +208,65 @@ SEASON FILTER ................ 2081 images
 
 ### Cluster filter
 
-<img align="left" width="282" height="282" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/cluster_flt.png">
 
-Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+We perform density clustering of image centroids to identify areas with consistent coverage and discard outliers.
 
 **Code:**
 
 ```python
-df = explorer.season_filter(commit = False)
+df = explorer.cluster_filter(commit = False)
 pygmt.show_on_map(df, target = 'img_rectangle')
 ```
 
 **Output:**
 
 ```text
-SEASON FILTER ................ 2081 images
+CLUSTER FILTER ................ 1503 images
+```
+
+<br clear="all">
+
+<!-- ![Alt text](data/maps/clusters_sector.png "image title") -->
+
+### Keyword filter
+
+<img align="left" width="282" height="282" src="data/maps/keyword_flt.png">
+
+We use rationale description (provided by HiRISE team), to further refine our selection. Here we set `keywords = ['scarp']`.
+
+**Code:**
+
+```python
+df = explorer.keyword_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+KEYWORD FILTER ................ 354 images
 ```
 
 <br clear="all">
 
 ### Mars Year filter
 
-<img align="left" width="282" height="282" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="data/maps/my_flt.png">
 
-Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
+We filter clusters by checking if they meet a minimum (and optionally consecutive) mars years requirement. Here `min_years = 2` and `consecuitive = False`.
 
 **Code:**
 
 ```python
-df = explorer.season_filter(commit = False)
+df = explorer.my_filter(commit = False)
 pygmt.show_on_map(df, target = 'img_rectangle')
 ```
 
 **Output:**
 
 ```text
-SEASON FILTER ................ 2081 images
-```
-
-<br clear="all">
-
-### Allignment filter
-
-<img align="left" width="282" height="282" src="data/maps/season_flt.png">
-
-Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = Northern Summer`.
-
-**Code:**
-
-```python
-df = explorer.season_filter(commit = False)
-pygmt.show_on_map(df, target = 'img_rectangle')
-```
-
-**Output:**
-
-```text
-SEASON FILTER ................ 2081 images
+MY FILTER ................ 334 images
 ```
 
 <br clear="all">
