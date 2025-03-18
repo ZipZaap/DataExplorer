@@ -114,7 +114,7 @@ Folders for storing QGIS/PyGMT visualizations and PDS index files (that contain 
 ## :earth_americas: Mapping examples
 
 <p align="center">
-  <img src="data/maps/latitude_flt.png" width="300" />
-  <img src="data/maps/latitude_flt.png" width="300" />
-  <img src="data/maps/latitude_flt.png" width="300" />
+  <img src="data/maps/latitude_flt.png" width="250" />
+  <img src="data/maps/latitude_flt.png" width="250" />
+  <img src="data/maps/latitude_flt.png" width="250" />
 </p>
