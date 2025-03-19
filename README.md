@@ -21,23 +21,10 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/your-username/ReliefContours.git
+    git clone https://github.com/ZipZaap/DataExplorer.git
     ```
 
-2. Install PyTorch and make sure cuda is enabled:
-
-    ```bash
-    conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-    ```
-
-    ```console
-    $ python
-    >>> import torch
-    >>> torch.cuda.is_available()
-    True
-    ```
-
-3. Create a virtual envirnement & install the rest of the required dependencies
+2. Create a virtual envirnement & install the required dependencies
 
     ```bash
     conda env create -f requirements.yml
