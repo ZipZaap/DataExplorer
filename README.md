@@ -136,7 +136,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 <details>
 <summary> Latitude filter </summary>
 
-<img align="left" width="282" height="282" src="figures/latitude_flt.png">
+<img align="left" width="240" height="240" src="figures/latitude_flt.png">
 
 **Code:**
 
@@ -144,9 +144,6 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 # test run to generate PyGMT map
 df = explorer.latitude_filter(min_lat=78, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.latitude_filter()
 ```
 
 **Output:**
