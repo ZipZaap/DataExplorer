@@ -136,7 +136,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 <details>
 <summary> Latitude filter </summary>
 
-<img align="left" width="240" height="240" src="figures/latitude_flt.png">
+<img align="left" width="238" height="238" src="figures/latitude_flt.png">
 
 **Code:**
 
