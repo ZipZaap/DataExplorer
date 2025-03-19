@@ -258,7 +258,7 @@ KEYWORD FILTER ................ 354 images
 
 <img align="left" width="282" height="282" src="data/maps/my_flt.png">
 
-We filter clusters by checking if they meet a minimum (and optionally consecutive) mars years requirement. Here `min_years = 2` and `consecuitive = False`.
+We filter clusters based on the sequence of unique (and optionally consecutive) mars years. Here `min_years = 2` and `consecuitive = False`.
 
 **Code:**
 
