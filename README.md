@@ -253,7 +253,7 @@ KEYWORD FILTER ................ 354 images
 
 ```python
 # test run to generate PyGMT map
-df = explorer.my_filter(min_years=2, consecuitive=False,  commit=False)
+df = explorer.my_filter(min_years=2, consecuitive=False, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
 ```
 
