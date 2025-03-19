@@ -131,7 +131,7 @@ def save_qgis_layer(df: pd.DataFrame,
     features = []
     if target == 'img_rectangle':
         for idx, row in df.iterrows(): 
-            polygon = gj.Polygon([(row[f"C{i}_X"], row[f"C{i}_Y"]) for i in [1,2,3,4,1]])
+            polygon = gj.Polygon([[(row[f"C{i}_X"], row[f"C{i}_Y"]) for i in [1,2,3,4,1]]])
             features.append(gj.Feature(geometry=polygon, properties={"ID": idx, "Name": row.PRODUCT_ID}))
     elif target == 'img_centroid':
         for idx, row in df.iterrows(): 

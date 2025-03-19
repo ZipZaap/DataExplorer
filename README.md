@@ -133,7 +133,14 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 
 ### Filter sequence
 
-<details>
+| filter 1 | filter 2 | filter 3 | 
+| --- | --- | --- |
+| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") |
+| filter 1 | filter 2 | filter 3 |
+| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") |
+
+
+<!-- <details>
 <summary> Latitude filter </summary>
 
 <img align="left" width="238" height="238" src="figures/latitude_flt.png">
@@ -163,7 +170,7 @@ LATITUDE FILTER ............. 5904 images
 
 ```python
 # test run to generate PyGMT map
-df = explorer.scale_filter(scale=0.25, commit=False)
+df=explorer.scale_filter(scale=0.25, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
 ```
 
@@ -184,7 +191,7 @@ SCALE FILTER ................ 3699 images
 
 ```python
 # test run to generate PyGMT map
-df = explorer.season_filter(season='Northern summer', commit=False)
+df=explorer.season_filter(season='Northern summer', commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
 ```
 
@@ -205,7 +212,7 @@ SEASON FILTER ................ 2081 images
 
 ```python
 # test run to generate PyGMT map
-df = explorer.cluster_filter(min_samples=2, epsilon=2000, commit=False)
+df=explorer.cluster_filter(min_samples=2, epsilon=2000, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
 ```
 
@@ -284,7 +291,7 @@ pygmt.show_on_map(df, target='img_rectangle')
 ALLIGNMENT FILTER ................ 203 images
 ```
 
-</details>
+</details> -->
 
 <!-- ### Filter sequence
 
