@@ -123,7 +123,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 
 <img align="left" width="282" height="282" src="figures/latitude_flt.png">
 
-We use image corner coordinates to discard products acquired below certain latitude. Only the single-channel RED images are considered with `min_lat = 78`.
+We use image corner coordinates to discard products acquired below `min_lat = 78`. Only the single-channel RED images are considered here.
 
 **Code:**
 
