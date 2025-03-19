@@ -113,6 +113,18 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 > [!TIP]
 > Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
 
+<!-- ## :gear: Parameters
+
+| Filter | Description | Parameters |
+| --- | --- | --- |
+| **Latitude** | Uses image corner latitude to filter out images acquired below the given value | `min_lat` : minimal latitude |
+| `Scale` | Filters the dataset by image resolution | `scale` : 1, 0.5 or 0.25 m/px|
+| `Season` | Derived from solar longitude and allows to filter images based on season. | `season` : in the form *'Hemisphere season'*, e.g. *'Northern summer'* |
+| `Cluster` | Uses image centroids (2D map projected), to perform density based clustering and locate regions with repeated coverage | `algorithm` : clustering algorithm <br> `min_smaples` : minimal number of points that form a cluster <br> `epsilon` : |
+| `Keyword` |  | |
+| `Mars Year` |  | |
+| `Allignment` |  | | -->
+
 ## :factory: Example use-case 
 
 In this example use-case we're looking to investigate the seasonal ice dynamics of the North Polar Layered Deposits (NPLD). For these purposes we need to isolate the HiRISE images of NPLD scraps, specifically focusing on locations that have continuos multi-year coverage. We use the following set of parameters:
@@ -128,11 +140,6 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
  'allignment_filter': {}
 }
 ```
-
-<!-- | Filter | Parameters |
-| --- | --- |
-| `git status` | min_lat = 78 |
-| `git diff` | Show file differences that **haven't been** staged | -->
 
 ### Filter sequence:
 
@@ -264,6 +271,28 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 
 ```text
 MY FILTER ................ 334 images
+```
+
+</details>
+
+<details>
+<summary> Allignment filter </summary>
+
+<img align="left" width="282" height="282" src="data/maps/allignment_flt.png">
+
+For each cluster, select the set of images that maximizes area overlap while ensuring each image represents a distinct Mars year.
+
+**Code:**
+
+```python
+df = explorer.my_filter(commit = False)
+pygmt.show_on_map(df, target = 'img_rectangle')
+```
+
+**Output:**
+
+```text
+MY FILTER ................ 203 images
 ```
 
 </details>

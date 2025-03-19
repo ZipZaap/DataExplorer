@@ -208,7 +208,7 @@ class RdrFilter():
                   consecutive: bool = CONF.consecutive,
                   commit: bool = True):
         """
-        Filter clusters based on Mars Year (MY) criteria.
+        Filter clusters based on the sequence of unique Mars Year (MY) it contains.
 
         Args:
             min_years (int): Minimum number of Mars Years to be present in a cluster.
