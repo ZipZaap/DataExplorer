@@ -138,6 +138,182 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 
 <img align="left" width="282" height="282" src="figures/latitude_flt.png">
 
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.latitude_filter(min_lat=78, commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.latitude_filter()
+```
+
+**Output:**
+
+```text
+LATITUDE FILTER ............. 5904 images
+```
+
+</details>
+
+<details>
+<summary> Scale filter </summary>
+
+<img align="left" width="282" height="282" src="figures/scale_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.scale_filter(scale=0.25, commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.scale_filter()
+```
+
+**Output:**
+
+```text
+SCALE FILTER ................ 3699 images
+```
+
+</details>
+
+<details>
+<summary> Season filter </summary>
+
+<img align="left" width="282" height="282" src="figures/season_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.season_filter(season='Northern summer', commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.season_filter()
+```
+
+**Output:**
+
+```text
+SEASON FILTER ................ 2081 images
+```
+
+</details>
+
+<details>
+<summary> Cluster filter </summary>
+
+<img align="left" width="282" height="282" src="figures/cluster_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.cluster_filter(min_samples=2, epsilon=2000, commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.cluster_filter()
+```
+
+**Output:**
+
+```text
+CLUSTER FILTER ................ 1503 images
+```
+
+---
+
+![Alt text](figures/clusters_sector.png "image title")
+
+Examples of DBSCAN clustering vizualized as image centroids (left) and actual area covered (right). Each color represents a separate cluster, with outliers labelled in gray. Location: (*Lon*<sub>1</sub>, *Lon*<sub>2</sub>, *Lat*<sub>1</sub>, *Lat*<sub>2</sub>) = (225&deg;, 240&deg;, 83.5&deg;, 84.5&deg;).
+
+</details>
+
+<details>
+<summary> Keyword filter </summary>
+
+<img align="left" width="282" height="282" src="figures/keyword_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.keyword_filter(keywords=['scarp'], commit = False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.keyword_filter()
+```
+
+**Output:**
+
+```text
+KEYWORD FILTER ................ 354 images
+```
+
+</details>
+
+<details>
+<summary> Mars Year filter </summary>
+
+<img align="left" width="282" height="282" src="figures/my_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.my_filter(min_years=2, consecuitive=False,  commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.my_filter()
+```
+
+**Output:**
+
+```text
+MY FILTER ................ 334 images
+```
+
+</details>
+
+<details>
+<summary> Allignment filter </summary>
+
+<img align="left" width="282" height="282" src="figures/allignment_flt.png">
+
+**Code:**
+
+```python
+# test run to generate PyGMT map
+df = explorer.allignment_filter(commit=False)
+pygmt.show_on_map(df, target='img_rectangle')
+
+# commit changes
+explorer.allignment_filter()
+```
+
+**Output:**
+
+```text
+ALLIGNMENT FILTER ................ 203 images
+```
+
+</details>
+
+<!-- ### Filter sequence
+
+<details>
+<summary> Latitude filter </summary>
+
+<img align="left" width="282" height="282" src="figures/latitude_flt.png">
+
 We use image corner coordinates to discard products acquired below `min_lat = 78`. Only the single-channel RED images are considered here.
 
 **Code:**
@@ -289,4 +465,4 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 MY FILTER ................ 203 images
 ```
 
-</details>
+</details> -->
