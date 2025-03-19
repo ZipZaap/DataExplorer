@@ -157,7 +157,7 @@ LATITUDE FILTER ............. 5904 images
 <details>
 <summary> Scale filter </summary>
 
-<img align="left" width="282" height="282" src="figures/scale_flt.png">
+<img align="left" width="238" height="238" src="figures/scale_flt.png">
 
 **Code:**
 
@@ -165,9 +165,6 @@ LATITUDE FILTER ............. 5904 images
 # test run to generate PyGMT map
 df = explorer.scale_filter(scale=0.25, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.scale_filter()
 ```
 
 **Output:**
@@ -181,7 +178,7 @@ SCALE FILTER ................ 3699 images
 <details>
 <summary> Season filter </summary>
 
-<img align="left" width="282" height="282" src="figures/season_flt.png">
+<img align="left" width="238" height="238" src="figures/season_flt.png">
 
 **Code:**
 
@@ -189,9 +186,6 @@ SCALE FILTER ................ 3699 images
 # test run to generate PyGMT map
 df = explorer.season_filter(season='Northern summer', commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.season_filter()
 ```
 
 **Output:**
@@ -205,7 +199,7 @@ SEASON FILTER ................ 2081 images
 <details>
 <summary> Cluster filter </summary>
 
-<img align="left" width="282" height="282" src="figures/cluster_flt.png">
+<img align="left" width="238" height="238" src="figures/cluster_flt.png">
 
 **Code:**
 
@@ -213,9 +207,6 @@ SEASON FILTER ................ 2081 images
 # test run to generate PyGMT map
 df = explorer.cluster_filter(min_samples=2, epsilon=2000, commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.cluster_filter()
 ```
 
 **Output:**
@@ -235,7 +226,7 @@ Examples of DBSCAN clustering vizualized as image centroids (left) and actual ar
 <details>
 <summary> Keyword filter </summary>
 
-<img align="left" width="282" height="282" src="figures/keyword_flt.png">
+<img align="left" width="238" height="238" src="figures/keyword_flt.png">
 
 **Code:**
 
@@ -243,9 +234,6 @@ Examples of DBSCAN clustering vizualized as image centroids (left) and actual ar
 # test run to generate PyGMT map
 df = explorer.keyword_filter(keywords=['scarp'], commit = False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.keyword_filter()
 ```
 
 **Output:**
@@ -259,7 +247,7 @@ KEYWORD FILTER ................ 354 images
 <details>
 <summary> Mars Year filter </summary>
 
-<img align="left" width="282" height="282" src="figures/my_flt.png">
+<img align="left" width="238" height="238" src="figures/my_flt.png">
 
 **Code:**
 
@@ -267,9 +255,6 @@ KEYWORD FILTER ................ 354 images
 # test run to generate PyGMT map
 df = explorer.my_filter(min_years=2, consecuitive=False,  commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.my_filter()
 ```
 
 **Output:**
@@ -283,7 +268,7 @@ MY FILTER ................ 334 images
 <details>
 <summary> Allignment filter </summary>
 
-<img align="left" width="282" height="282" src="figures/allignment_flt.png">
+<img align="left" width="238" height="238" src="figures/allignment_flt.png">
 
 **Code:**
 
@@ -291,9 +276,6 @@ MY FILTER ................ 334 images
 # test run to generate PyGMT map
 df = explorer.allignment_filter(commit=False)
 pygmt.show_on_map(df, target='img_rectangle')
-
-# commit changes
-explorer.allignment_filter()
 ```
 
 **Output:**
