@@ -145,7 +145,7 @@ LATITUDE FILTER ............. 5904 images
 
 <img align="left" width="282" height="282" src="figures/scale_flt.png">
 
-HiRISE dataset contains images with resolutions of `1`, `0.5` or `0.25` m/pxl. We set `scale = 0.25` to keep only the high-res products.
+HiRISE dataset contains images with resolutions of `1`, `0.5` or `0.25` meters/pxl. We set `scale = 0.25` to keep only the high-res products.
 
 **Code:**
 
