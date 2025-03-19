@@ -117,7 +117,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
 In this example use-case we're looking to investigate the seasonal ice dynamics of the North Polar Layered Deposits (NPLD). For these purposes we need to isolate the HiRISE images of NPLD scraps, specifically focusing on locations that have continuos multi-year coverage. We use the following set of parameters:
 
-```python
+```json
 {
  'latitude_filter': {'min_lat': 78},
  'scale_filter': {'scale': 0.25},
