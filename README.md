@@ -100,19 +100,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 > [!TIP]
 > Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
 
-<!-- ## :gear: Parameters
-
-| Filter | Description | Parameters |
-| --- | --- | --- |
-| **Latitude** | Uses image corner latitude to filter out images acquired below the given value | `min_lat` : minimal latitude |
-| `Scale` | Filters the dataset by image resolution | `scale` : 1, 0.5 or 0.25 m/px|
-| `Season` | Derived from solar longitude and allows to filter images based on season. | `season` : in the form *'Hemisphere season'*, e.g. *'Northern summer'* |
-| `Cluster` | Uses image centroids (2D map projected), to perform density based clustering and locate regions with repeated coverage | `algorithm` : clustering algorithm <br> `min_smaples` : minimal number of points that form a cluster <br> `epsilon` : |
-| `Keyword` |  | |
-| `Mars Year` |  | |
-| `Allignment` |  | | -->
-
-## :factory: Example use-case 
+## :factory: Example use-case
 
 In this example use-case we're looking to investigate the seasonal ice dynamics of the North Polar Layered Deposits (NPLD). For these purposes we need to isolate the HiRISE images of NPLD scraps, specifically focusing on locations that have continuos multi-year coverage. We use the following set of parameters:
 
@@ -128,12 +116,12 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 }
 ```
 
-### Filter sequence:
+### Filter sequence
 
 <details>
 <summary> Latitude filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/latitude_flt.png">
+<img align="left" width="282" height="282" src="figures/latitude_flt.png">
 
 This is the output from the initial latitude filter. Only the single-channel RED images are considered with `min_lat = 78`.
 
@@ -155,7 +143,7 @@ LATITUDE FILTER ............. 5904 images
 <details>
 <summary> Scale filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/scale_flt.png">
+<img align="left" width="282" height="282" src="figures/scale_flt.png">
 
 HiRISE dataset contains images with resolutions of `1`, `0.5` or `0.25` m/pxl. We set `scale = 0.25` to keep only the high-res products.
 
@@ -177,7 +165,7 @@ SCALE FILTER ................ 3699 images
 <details>
 <summary> Season filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/season_flt.png">
+<img align="left" width="282" height="282" src="figures/season_flt.png">
 
 Using solar longitude we can define 4 distinct seasons for Southern and Northern hemispheres. Here we set `season = 'Northern Summer'`.
 
@@ -199,7 +187,7 @@ SEASON FILTER ................ 2081 images
 <details>
 <summary> Cluster filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/cluster_flt.png">
+<img align="left" width="282" height="282" src="figures/cluster_flt.png">
 
 We perform density clustering of image centroids to identify areas with consistent coverage and discard outliers.
 
@@ -216,12 +204,14 @@ pygmt.show_on_map(df, target = 'img_rectangle')
 CLUSTER FILTER ................ 1503 images
 ```
 
+![Alt text](figures/clusters_sector.png "image title")
+
 </details>
 
 <details>
 <summary> Keyword filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/keyword_flt.png">
+<img align="left" width="282" height="282" src="figures/keyword_flt.png">
 
 We use rationale description (provided by HiRISE team), to further refine our selection. Here we set `keywords = ['scarp']`.
 
@@ -243,7 +233,7 @@ KEYWORD FILTER ................ 354 images
 <details>
 <summary> Mars Year filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/my_flt.png">
+<img align="left" width="282" height="282" src="figures/my_flt.png">
 
 We filter clusters based on the sequence of unique (and optionally consecutive) mars years. Here `min_years = 2` and `consecuitive = False`.
 
@@ -265,7 +255,7 @@ MY FILTER ................ 334 images
 <details>
 <summary> Allignment filter </summary>
 
-<img align="left" width="282" height="282" src="data/maps/allignment_flt.png">
+<img align="left" width="282" height="282" src="figures/allignment_flt.png">
 
 For each cluster, select the set of images that maximizes area overlap while ensuring each image represents a distinct Mars year.
 
