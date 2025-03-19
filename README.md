@@ -8,7 +8,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
    Effortlessly filter and retrieve large sets of HiRISE images based on user-defined criteria. These custom filters allow you to refine queries by location, date, viewing geometry, and more.
 
 2. **DBSCAN Clustering for Imaging Hotspots**  
-   Identify multi-year imaging hotspots using Density-Based Spatial Clustering of Applications with Noise (DBSCAN). By grouping overlapping or closely spaced images, you can reveal areas of Mars with repeated HiRISE coverage.
+   Identify multi-year imaging hotspots using Density-Based Spatial Clustering of Applications with Noise ([DBSCAN](https://github.com/wangyiqiu/dbscan-python)). By grouping overlapping or closely spaced images, you can reveal areas of Mars with repeated HiRISE coverage.
 
 3. **Shapely-Based Stack Selection**  
    Leverage the geometric capabilities of [Shapely](https://shapely.readthedocs.io/) to handle overlapping images. Automatically choose the best stacks from intersecting footprints and easily incorporate them into your data analysis or map displays.
