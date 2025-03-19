@@ -206,7 +206,7 @@ CLUSTER FILTER ................ 1503 images
 
 ![Alt text](figures/clusters_sector.png "image title")
 
-Examples of DBSCAN clustering vizualized as image centroids (left) and actual area covered (right). Region cooridnates (*Lon*<sub>1</sub>, *Lon*<sub>2</sub>, *Lat*<sub>1</sub>, *Lat*<sub>2</sub>) = (225&deg;, 240&deg;, 83.5&deg;, 84.5&deg;). Each color represents a separate cluster, with outliers labelled in gray.
+Examples of DBSCAN clustering vizualized as image centroids (left) and actual area covered (right). Each color represents a separate cluster, with outliers labelled in gray. Location: (*Lon*<sub>1</sub>, *Lon*<sub>2</sub>, *Lat*<sub>1</sub>, *Lat*<sub>2</sub>) = (225&deg;, 240&deg;, 83.5&deg;, 84.5&deg;).
 
 </details>
 
