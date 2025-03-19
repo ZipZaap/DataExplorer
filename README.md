@@ -98,9 +98,24 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     ```
 
 > [!TIP]
-> Optimize your workflow by customizing the filter sequence in `configs.yaml` and setting sensible defaults applicable to your use case.
+> You can optimize your workflow by defining a custom filter sequence in [`config.yaml`](configs/config.yaml) and setting sensible defaults applicable to your use case.
 
-## :factory: Example use-case
+## :gear: Available filters
+
+| Filter | Description |
+| --- | --- |
+| `latitude_filter` | Performs location-based filtering by retaining images acquired above a given latitude.|
+| `scale_filter` | Performs resolution-based filtering by retaining images acquired with a given camera map scale setting. |
+| `season_filter` | Performs seasonal filtering by retaining images captured at solar longitudes corresponding to the specified season. |
+| `cluster_filter` | Performs density-based filtering by retaining only those images that have other images in their immediate proximity. The clustering is performed on map-projected image centroids. The resulting grouping represents the imaging hotspots.|
+| `keyword_filter` | Performs semantic filtering, based on the rationale description associated with HiRISE products. This operation is performed at the cluster level, i.e. if any image within a cluster contains a user-defined keyword in its description, the entire cluster is retained.|
+| `my_filter` | Performs temporal filtering by only retaining clusters that either contain a specified number of (optionally consecuitive) unique mars years, or include a user-defined mars year sequence. This step helps to isolate locations with multi-year image coverage. |
+| `allignment_filter` | Performs alignment filtering by retaining only one image per unique mars year within each cluster. The filter evaluates all possible combinations of images and selects the stack with the greatest area overlap. |
+
+> [!TIP]
+> For detailed descriptions of method parameters, available parameter values, and their corresponding types, refer to the docstrings provided in [`filter.py`](Core/filter.py).
+
+## :artificial_satellite: Example use-case
 
 In this example use-case we're looking to investigate the seasonal ice dynamics of the North Polar Layered Deposits (NPLD). For these purposes we need to isolate the HiRISE images of NPLD scraps, specifically focusing on locations that have continuos multi-year coverage. We use the following set of parameters:
 
