@@ -131,13 +131,21 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 }
 ```
 
-### Filter sequence
+The filters can be divided by type into two categories: those that operate on separate images and those that operate on clusters. In the example workflow below the cyan rectangles represent the footprints of individual images, and the purple circles - the cluster centroids:
 
-| filter 1 | filter 2 | filter 3 | 
-| --- | --- | --- |
-| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") |
-| filter 1 | filter 2 | filter 3 |
-| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/latitude_flt.png "image title") |
+| Type | [1] Latitude filter | [2] Scale filter | [3] Season filter | 
+| --- | --- | --- | --- |
+|`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") |
+|| **[4] Cluster filter** | **[5] Keyword filter** | **[6] Mars year filter**  |
+|`CLUSTER`| ![Alt text](figures/cluster_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/my_flt.png "image title") |
+
+> [!TIP]
+> You can click on images to get a closer look.
+
+Examples of DBSCAN clustering vizualized as image centroids (left) and actual area covered (right). Each color represents a separate cluster, with outliers labelled in gray. Location: (*Lon*<sub>1</sub>, *Lon*<sub>2</sub>, *Lat*<sub>1</sub>, *Lat*<sub>2</sub>) = (225&deg;, 240&deg;, 83.5&deg;, 84.5&deg;).
+
+![Alt text](figures/clusters_sector.png "image title")
+
 
 
 <!-- <details>
