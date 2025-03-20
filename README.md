@@ -142,7 +142,7 @@ The filters can be divided by type into two categories: those that operate on se
 > [!TIP]
 > You can click on images to get a closer look.
 
-An example of DBSCAN clustering visualized as image centroids (left) and actual area covered (right). Each color represents a separate cluster, with outliers labelled in gray. Map segemnt located at: (225&deg; < LAT < 240&deg;, 83.5&deg; < LON < 84.5&deg;).
+An example of DBSCAN clustering visualized as image centroids (left) and actual area covered (right). Each color represents a separate cluster, with outliers labelled in gray. Segment co-ordinates : (225&deg; < LAT < 240&deg;, 83.5&deg; < LON < 84.5&deg;).
 
 ![Alt text](figures/clusters_sector.png "image title")
 
