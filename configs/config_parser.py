@@ -26,14 +26,10 @@ class Config:
         """
         # Default directories
         self.QGIS_DIR = os.path.join(self.DATA_DIR, "geojson")
-        self.INDX_DIR = os.path.join(self.DATA_DIR, "index")
-        self.MAPS_DIR = os.path.join(self.DATA_DIR, "maps")
-
-        # Create directories if they don't exist
-        for directory in [self.QGIS_DIR, self.INDX_DIR, self.MAPS_DIR]:
-            os.makedirs(directory, exist_ok=True)
+        self.IDX_DIR = os.path.join(self.DATA_DIR, "index")
+        self.MAP_DIR = os.path.join(self.DATA_DIR, "maps")
+        self.RDR_DIR = os.path.join(self.DATA_DIR, "rdr")
 
         # Default filepaths
-        self.TAB_PATH = os.path.join(self.INDX_DIR, "RDRCUMINDEX.TAB")
-        self.LBL_PATH = os.path.join(self.INDX_DIR, "RDRCUMINDEX.LBL")
-        self.FILTERED_PATH = os.path.join(self.INDX_DIR, "FILTERED.TAB")
+        self.TAB_PATH = os.path.join(self.IDX_DIR, "RDRCUMINDEX.TAB")
+        self.LBL_PATH = os.path.join(self.IDX_DIR, "RDRCUMINDEX.LBL")

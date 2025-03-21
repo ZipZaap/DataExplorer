@@ -1,4 +1,4 @@
-# import os
+import os
 import itertools
 from functools import reduce
 
@@ -10,7 +10,7 @@ from dbscan import DBSCAN
 
 from configs.config_parser import Config
 from configs.validators import validate_and_log
-from .util import arc2psp, utc2my, is_sequence, download_index, print_stats
+from .util import arc2psp, utc2my, is_sequence, download_from_pds, print_stats
 
 from Core.visualize import Mapper
 
@@ -20,17 +20,24 @@ class RdrFilter():
     
     def __init__(self, 
                  url: str = CONF.URL, 
-                 filepaths: list[str] = CONF.FILES, 
-                 savedir: str = CONF.INDX_DIR):
+                 idx_paths: list[str] = CONF.PATH2IDX, 
+                 idx_savedir: str = CONF.IDX_DIR,
+                 rdr_savedir: str = CONF.RDR_DIR
+                 ) -> None:
         """
         Initialize RdrFilter instance.
 
         Args:
-            url (str): The URL to download index files.
-            filepaths (list[str]): List of filepaths to download.
-            savedir (str): Directory where the index files are saved.
+            url (str): URL of the PDS server.
+            idx_paths (list[str]): List of index file paths.
+            idx_savedir (str): Directory to save the index files.
+            rdr_savedir (str): Directory to save the downloaded RDR files.
         """
-        download_index(url, filepaths, savedir)
+        self.url = url
+        self.rdr_savedir = rdr_savedir
+        self.idx_savedir = idx_savedir
+        download_from_pds(url, idx_paths, idx_savedir)
+
         self.local_conf = {}
         self.df = None
         self.tmp_df = None
@@ -382,8 +389,37 @@ class RdrFilter():
         elif engine == 'pygmt':
             self.mapper.use_pygmt(self.tmp_df, target, filename)
 
-    def save_df(self, filepath: str = CONF.FILTERED_PATH):
-        self.df.to_csv(filepath, sep="\t", index=False)
+    def save_df(self, filename: str = 'FILTERED'):
+        savepath = os.path.join(self.idx_savedir, f"{filename}.TAB")
+        self.df.to_csv(savepath, sep="\t", index=False)
+
+    def download_images(self, 
+                        product_id: list[str] = None,
+                        cluster_id: int = None,
+                        reload: bool = False
+                        ) -> None:
+        """
+        Download the filtered images from the PDS server. If `product_id` is provided, 
+        download images based on the product ID, else download based on the cluster ID.
+  
+        Args:
+            product_id (list[str]): List of product IDs to download.
+            cluster_id (int): Cluster ID to download.
+            reload (bool): Forces download even if the file exists locally.
+        Raises:
+            ValueError: If neither `product_id` nor `cluster_id` is provided.
+            Exception: If retriveal by `cluster_id` is attempted before cluster_filter() is applied.
+        """
+
+        if not product_id and not cluster_id:
+            raise ValueError("At least one of `product_id` or `cluster_id` must be provide")
+        elif product_id:
+            rdr_paths = self.df[self.df['PRODUCT_ID'].isin(product_id)]['FILE_NAME_SPECIFICATION'].tolist()
+        elif cluster_id:
+            self._assert_cluster()
+            rdr_paths = self.df[self.df['CLUSTER'] == cluster_id]['FILE_NAME_SPECIFICATION'].tolist()
+        
+        download_from_pds(self.url, rdr_paths, self.rdr_savedir, reload)
 
 
 if __name__ == '__main__':

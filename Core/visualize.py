@@ -16,7 +16,7 @@ class Mapper:
                  resolution: str = CONF.resolution,
                  map_region: str = CONF.map_region,
                  projection: str = CONF.projection,
-                 pygmt_savedir: str = CONF.MAPS_DIR,
+                 pygmt_savedir: str = CONF.MAP_DIR,
                  qgis_savedir: str = CONF.QGIS_DIR
                  ):
         """
@@ -48,11 +48,11 @@ class Mapper:
 
         Args:
             df (pd.DataFrame): DataFrame containing coordinate data.
-            target (str): Type of overlay. Must be one of 'img_rectangle', 'img_centroid',
-                          or 'cluster_centroid'.
+            target (str): Type of overlay. One of 'img_rectangle', 'img_centroid' or 'cluster_centroid'.
             filename (str): Name of the output file (without extension).
         """
-        
+        os.makedirs(self.pygmt_savedir, exist_ok=True)
+
         fig = pygmt.Figure()
         pygmt.makecpt(cmap='dem3', series=[-8000, -1800, 1], continuous=True)
 
@@ -107,9 +107,10 @@ class Mapper:
 
         Args:
             df (pd.DataFrame): DataFrame containing coordinate and attribute data.
-            target (str): Type of layer to generate. Must be one of `img_rectangle`, `img_centroid` or `cluster_centroid`.
+            target (str): Type of layer to generate.One of: `img_rectangle`, `img_centroid` or `cluster_centroid`.
             filename (str): Name of the output file (without extension).
         """
+        os.makedirs(self.qgis_savedir, exist_ok=True)
 
         features = []
         if target == 'img_rectangle':

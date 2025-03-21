@@ -12,11 +12,11 @@ from configs.config_parser import Config
 CONF = Config('configs/config.yaml')
 
 
-def download_index(url: str, 
-                   filepaths: list[str], 
-                   savedir: str, 
-                   reload: bool = False
-                   ) -> None:
+def download_from_pds(url: str, 
+                      filepaths: list[str], 
+                      savedir: str, 
+                      reload: bool = False
+                     ) -> None:
     """
     Download files from the given URL if they do not exist locally or if reload is True.
 
@@ -26,6 +26,7 @@ def download_index(url: str,
         savedir (str): The directory where downloaded files are saved.
         reload (bool): Forces download even if the file exists locally.
     """
+    os.makedirs(savedir, exist_ok=True)
 
     for relative_path in filepaths:
         filename = relative_path.split('/')[-1]

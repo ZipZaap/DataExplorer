@@ -44,8 +44,9 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 │   └──util.py--------------------------- # Misc utility functions
 |
 ├───data/
-│   ├───geojson/ ------------------------ # Storage for qgis .geojson files
+│   ├───geojson/ ------------------------ # Storage for QGIS .geojson files
 │   ├───index/ -------------------------- # Storage for PDS .TAB & .LBL files
+|   ├───rdr/ ---------------------------- # Storage for downloaded .JP2 files
 │   └───maps/ --------------------------- # Storage for PyGMT .png files
 |
 ├───main.ipynb -------------------------- # Jupyter Notebook with examples
@@ -87,6 +88,9 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     # Show the logged parameters and save the filtered DataFrame
     print(explorer.local_conf)
     explorer.save_df()
+
+    # (Optionally) download the .JP2 products from the HiRISE archive
+    explorer.download_images(cluster_id = 2, reload = True)
     ```
 
 2. **As standalone script**
@@ -157,15 +161,15 @@ Alternatively, the user can opt for a more interactive approach by visualizing t
 
 ![Alt text](figures/qgis_example.gif "image title")
 
-## License
+## :memo: License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE.txt) for more information.
 
-## Contact
+## :envelope: Contact
 
-Martynchuk Oleksii - martyn.chuckie@gmain.com
+Martynchuk Oleksii - martyn.chuckie@gmail.com
 
-## Acknowledgements
+## :handshake: Acknowledgements
 
 This project was made possible thanks to the support and resources provided by:
 
