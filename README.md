@@ -153,4 +153,6 @@ DBSCAN clustering visualized as image centroids (left) and image footprints (rig
 
 ## :earth_americas: QGIS
 
+Alternatively, the user can opt for a more interactive approach by visualizing the image footprints in QGIS. To support this, we also provide a stereographic map of the Martian North Pole that can serve as a base layer.
+
 ![Alt text](figures/qgis_example.gif "image title")
