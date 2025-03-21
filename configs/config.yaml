@@ -40,4 +40,6 @@ filter_sequence: [
 
 ### MAPPING
 # pygmt
-resolution: '10m'
+resolution: "10m"
+map_region: "0/360/78/90"
+projection: "G0/90/12c"

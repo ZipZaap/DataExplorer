@@ -7,6 +7,9 @@ class Config:
         """
         Initialize the configuration object by loading a YAML file,
         validating its content, and setting attributes accordingly.
+
+        Args:
+            cfgpath (str): Path to the `config.yaml`.
         """
         with open(cfgpath) as file:
             yaml_conf = yaml.load(file, Loader=yaml.FullLoader)
@@ -26,6 +29,7 @@ class Config:
         self.INDX_DIR = os.path.join(self.DATA_DIR, "index")
         self.MAPS_DIR = os.path.join(self.DATA_DIR, "maps")
 
+        # Create directories if they don't exist
         for directory in [self.QGIS_DIR, self.INDX_DIR, self.MAPS_DIR]:
             os.makedirs(directory, exist_ok=True)
 

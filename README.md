@@ -62,19 +62,17 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
     ```python
     from Core.filter import RdrFilter
-    from Core.mapper import PyGMT, save_qgis_layer
 
-    # initialize class instances
+    # initialize the class instance
     explorer = RdrFilter()
-    pygmt = PyGMT()
 
     # load df and perfrom latitude filtering without commiting the changes
     explorer.load_df()
-    df = explorer.latitude_filter(commit = False)
+    explorer.latitude_filter(commit = False)
 
-    # render map with PyGMT and save to qgis layer
-    pygmt.show_on_map(df, target = 'img_centroid', filename = 'allignment_flt')
-    save_qgis_layer(df, target = 'img_centroid', filename = 'allignment_flt')
+    # visualize image footprints with PyGMT and image centroids with QGIS
+    explorer.visualize(engine = 'pygmt', target = 'img_rectangle', filename = 'allignment_flt')
+    explorer.visualize(engine = 'qgis', target = 'img_centroid', filename = 'allignment_flt')
 
     # filter again, this time using custom LAT and saving the changes
     explorer.latitude_filter(min_lat = 80)
@@ -98,7 +96,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     ```
 
 > [!TIP]
-> You can optimize your workflow by defining a custom filter sequence in [`config.yaml`](configs/config.yaml) and setting sensible defaults applicable to your use case.
+> You can define a custom filter sequence, set sensible defaults or adjust the PyGMT visualization by editing [`config.yaml`](configs/config.yaml).
 
 ## :gear: Available filters
 

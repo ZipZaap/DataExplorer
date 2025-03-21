@@ -4,23 +4,36 @@ import inspect
 RULES = {
     'min_lat': (
         lambda x: -90 < x < 90,
-        'Value out of range! Latitude must be between -90 and 90 degrees'
+        "Value out of range! Latitude must be between -90 and 90 degrees"
     ),
     'min_samples': (
         lambda x: x >= 2,
-        'Value out of range! At least 2 samples required to form a cluster'
+        "Value out of range! At least 2 samples required to form a cluster"
     ),
     'min_years': (
         lambda x: x >= 2,
-        'Value out of range! At least 2 unique mars years required to retain a cluster'
+        "Value out of range! At least 2 unique mars years required to retain a cluster"
     ),
     'algorithm': (
         lambda x: x in ['hdbscan', 'dbscan'],
-        'Invalid algorithm! Choose either hdbscan or dbscan'
+        "Invalid algorithm! Choose one of: `hdbscan` or `dbscan`."
     ),
     'scale': (
         lambda x: x in (0.25, 0.5, 1),
-        'Invalid scale! Choose either 0.25, 0.5 or 1'
+        "Invalid scale! Choose one of: 0.25, 0.5 or 1."
+    ),
+    'season': (
+        lambda x: x in ['Northern winter', 'Northern spring', 'Northern summer', 'Northern autumn',
+                        'Southern winter', 'Southern spring', 'Southern summer', 'Southern autumn'],
+        "Invalid season! Use `<hemisphere> <season>` format"
+    ),
+    'engine': (
+        lambda x: x in ['pygmt', 'qgis'],
+        "Invalid engine! Choose one of: `pygmt` or `qgis`."
+    ),
+    'target': (
+        lambda x: x in ['img_rectangle', 'img_centroid', 'cluster_centroid'],
+        "Invalid target! Choose one of: `img_rectangle`, `img_centroid`, `cluster_centroid`."
     )
 }
 
@@ -71,7 +84,7 @@ def validate_and_log(X):
             result = X(self, *args, **kwargs)
 
             bound_args.apply_defaults()
-            if bound_args.arguments['commit'] == True:
+            if bound_args.arguments.get('commit', False):
                 bound_args.arguments.pop('commit')
                 self.local_conf[X.__name__] = bound_args.arguments
                 
