@@ -156,3 +156,22 @@ DBSCAN clustering visualized as image centroids (left) and image footprints (rig
 Alternatively, the user can opt for a more interactive approach by visualizing the image footprints in QGIS. To support this, we also provide a stereographic map of the Martian North Pole that can serve as a base layer.
 
 ![Alt text](figures/qgis_example.gif "image title")
+
+## License
+
+Distributed under the MIT License. See [`LICENSE`](LICENSE.txt) for more information.
+
+## Contact
+
+Martynchuk Oleksii - martyn.chuckie@gmain.com
+
+## Acknowledgements
+
+This project was made possible thanks to the support and resources provided by:
+
+* [Technische Universität Berlin (TU Berlin)](https://www.tu.berlin/)
+* [German Aerospace Center (DLR) Berlin](https://www.dlr.de/de/das-dlr/standorte-und-bueros/berlin)
+* [HiRISE (High Resolution Imaging Science Experiment) team at the University of Arizona](https://www.uahirise.org/)
+* [HEIBRIDS School for Data Science](https://www.heibrids.berlin/)
+
+Additional thanks to the open‑source community and all contributors who help improve this project.

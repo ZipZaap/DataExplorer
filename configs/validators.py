@@ -69,7 +69,6 @@ def validate_and_log(X):
 
     Raises:
         ValueError: If any validation test fails.
-        Exception: If any decorated method is applied twice
     """
     if callable(X):
         @functools.wraps(X)
