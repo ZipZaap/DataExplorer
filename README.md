@@ -100,7 +100,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     ```
 
 > [!TIP]
-> You can define a custom filter sequence, set sensible defaults or adjust the PyGMT visualization by editing [`config.yaml`](configs/config.yaml).
+> You can define a custom filter sequence, set defaults or adjust the PyGMT visualization by editing [`config.yaml`](configs/config.yaml).
 
 ## :gear: Available filters
 
