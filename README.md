@@ -147,3 +147,10 @@ The filters can be divided by type into two categories: those that operate on se
 DBSCAN clustering visualized as image centroids (left) and image footprints (right). Each color represents a separate cluster, with outliers labelled in gray. Segment co-ordinates : (225&deg; < LAT < 240&deg;, 83.5&deg; < LON < 84.5&deg;).
 
 ![Alt text](figures/clusters_sector.png "image title")
+
+> [!NOTE]
+> This approach works well for the HiRISE dataset since the images are not randomly distributed but are instead concentrated around locations of scientific interest identified by the HiRISE team, making them inherently well suited to unsupervised clustering.
+
+## :earth_americas: QGIS
+
+![Alt text](figures/qgis_example.gif "image title")
