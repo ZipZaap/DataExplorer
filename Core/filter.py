@@ -1,18 +1,14 @@
 import os
 import itertools
-from functools import reduce
-
-import numpy as np
 import pandas as pd
+from pathlib import Path
+from dbscan import DBSCAN # type: ignore[reportAttributeAccessIssue]
+from functools import reduce
 from shapely.geometry import Polygon
-
-from dbscan import DBSCAN
 
 from configs.config_parser import Config
 from configs.validators import validate_and_log
 from .util import arc2psp, utc2my, is_sequence, download_from_pds, print_stats
-
-from Core.visualize import Mapper
 
 CONF = Config('configs/config.yaml')
 
@@ -20,60 +16,57 @@ class RdrFilter():
     
     def __init__(self, 
                  url: str = CONF.URL, 
-                 idx_paths: list[str] = CONF.PATH2IDX, 
-                 idx_savedir: str = CONF.IDX_DIR,
-                 rdr_savedir: str = CONF.RDR_DIR
-                 ) -> None:
+                 idx_path: list = CONF.PATH2IDX, 
+                 idx_savedir: Path = CONF.IDX_DIR,
+                 columns: list[str] = CONF.columns,
+                 red: bool = True):
         """
-        Initialize RdrFilter instance.
+        Initialize RdrFilter instance. Load the dataframe from label and tab files. 
+        Keep only the specified columns. Discard the images that are not single-channel RED. 
+        Convert the areocentric co-ordinates to 2D polar stereographic.
 
-        Args:
-            url (str): URL of the PDS server.
-            idx_paths (list[str]): List of index file paths.
-            idx_savedir (str): Directory to save the index files.
-            rdr_savedir (str): Directory to save the downloaded RDR files.
-        """
-        self.url = url
-        self.rdr_savedir = rdr_savedir
-        self.idx_savedir = idx_savedir
-        download_from_pds(url, idx_paths, idx_savedir)
+        Args
+        ----
+            url : str
+                URL of the PDS server.
 
-        self.local_conf = {}
-        self.df = None
-        self.tmp_df = None
-        self.mapper = Mapper()
+            idx_paths : dict
+                Dictionary of index file paths.
+
+            idx_savedir : Path
+                Directory to save the index files.
+
+            columns : list[str]
+                List of columns to keep in the dataframe.
             
-    def _assert_cluster(self):
-        if 'CLUSTER' not in self.df.columns:
-            raise Exception("Current filter can't be applied before cluster_filter()")
+            red : bool
+                Whether to keep only the RED images (single-channel).
+        """
 
-    def load_df(self,
-                lbl_path: str = CONF.LBL_PATH,
-                tab_path: str = CONF.TAB_PATH, 
-                columns: list[str] = CONF.columns):
+        # initialize paths & local configuration dictionary
+        self.url = url
+        self.idx_savedir = idx_savedir
+        self.local_conf = {}
         
-        """
-        Load the dataframe from label and tab files. Keep only the specified columns.
-        Discard the images that are not single-channel RED. Convert the areocentric
-        co-ordinates to 2D polar stereographic.
-
-        Args:
-            lbl_path (str): Path to the label file.
-            tab_path (str): Path to the tabular data file.
-            columns (list[str]): List of columns to keep.
-        """
+        # download index files if not present
+        download_from_pds(url, idx_path, idx_savedir)
 
         # load .tab
-        with open(lbl_path, 'r') as f:
+        lbl_path = idx_savedir / "RDRCUMINDEX.LBL"
+        tab_path = idx_savedir / "RDRCUMINDEX.TAB"
+        with lbl_path.open('r') as f:
             labels = f.read().splitlines() 
         labels = [label.split()[2] for label in labels if 'NAME' in label]
         self.df = pd.read_csv(tab_path, names=labels)
 
-        # keep only the useful columns; clean the PRODUCT_ID string; keep only the RED images (1 channel)
+        # keep only the useful columns; clean the PRODUCT_ID string.
         self.df = self.df[columns]
         self.df['PRODUCT_ID'] = self.df['PRODUCT_ID'].str.strip()
         self.df['FILE_NAME_SPECIFICATION'] = self.df['FILE_NAME_SPECIFICATION'].str.strip()
-        self.df = self.df[self.df['PRODUCT_ID'].str.contains('RED')]
+
+        # keep only the RED images (1 channel)
+        if red:
+            self.df = self.df[self.df['PRODUCT_ID'].str.contains('RED')]
 
         # convert the (LAT, LON) areocentric [ARC] co-oridantes to (X, Y) 2D polar stereographic [PSP]
         for i in range(1, 5):
@@ -84,10 +77,10 @@ class RdrFilter():
         for coor in ['LON', 'LAT', 'X', 'Y']:
             self.df[f'CTR_{coor}'] = self.df[[f'C{i}_{coor}' for i in range(1, 5)]].mean(axis=1)
 
-
         self.df.reset_index(drop=True, inplace=True)
 
-        print_stats('NO FILTER', f'{len(self.df)} images')
+        print_stats('DATASET SIZE', f'{len(self.df)} images')
+
 
     @validate_and_log
     def latitude_filter(self, 
@@ -97,20 +90,42 @@ class RdrFilter():
         Keep only the images above the specified minimum latitude. 
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            min_lat (int): Minimum latitude value.
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            ValueError: If the minimum latitude is out of range.
+        Args
+        ----
+            min_lat : int
+                Minimum latitude value.
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If the minimum latitude is out of range.
+
+            ValueError
+                If no images are found above the specified latitude.
+
+        Returns
+        -------
+            self.tmp_df :pd.DataFrame
+                The filtered dataframe.
         """
+
         self.tmp_df = self.df.copy()
         self.tmp_df = self.tmp_df[(self.tmp_df[[f'C{i}_LAT' for i in range(1,5)]] > min_lat).any(axis=1)]
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('LATITUDE FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError(f"No images found above the specified latitude: {min_lat}.")
+        else:
+            print_stats('LATITUDE FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
+
+        return self.tmp_df
+
 
     @validate_and_log
     def scale_filter(self, 
@@ -120,20 +135,42 @@ class RdrFilter():
         Filter images by map scale.
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            scale (float): Desired map scale. Must be one of: 0.25, 0.5, 1.
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            ValueError: If an unsupported scale is provided.
+        Args
+        ----
+            scale : float
+                Desired map scale. Must be one of: 0.25, 0.5, 1.
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If an unsupported scale is provided.
+
+            ValueError
+                If no images are found for the specified scale.
+
+        Returns
+        -------
+            self.tmp_df : pd.DataFrame
+                The filtered dataframe.
         """
+        
         self.tmp_df = self.df.copy()
         self.tmp_df = self.tmp_df[self.tmp_df['MAP_SCALE'] == scale]
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('SCALE FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError(f"No images found for the specified scale: {scale}.")
+        else:
+            print_stats('SCALE FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
+
+        return self.tmp_df
+
 
     @validate_and_log
     def season_filter(self, 
@@ -143,12 +180,27 @@ class RdrFilter():
         Filter images based on the specified season.
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            season (str): Season string to filter images by. 
-                          Must be of `<hemisphere> <season>` format"
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            ValueError: If an unsupported season is provided.
+        Args
+        ----
+            season : str
+                Season string to filter images by. 
+                Must be of `<hemisphere> <season>` format"
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If an unsupported season is provided.
+
+            ValueError
+                If no images are found for the specified season.
+
+        Returns
+        -------
+            self.tmp_df : pd.DataFrame
+                The filtered dataframe.
         """
 
         if season in ('Northern spring', 'Southern autumn'):
@@ -163,20 +215,27 @@ class RdrFilter():
         elif season in ('Northern winter', 'Southern summer'):
             min_sol_long = 270
             max_sol_long = 360
+        else:
+            raise ValueError("Invalid season! Use `<hemisphere> <season>` format")
 
         self.tmp_df = self.df.copy()
         self.tmp_df = self.tmp_df[(self.tmp_df['SOLAR_LONGITUDE'] > min_sol_long) & 
                         (self.tmp_df['SOLAR_LONGITUDE'] < max_sol_long)]
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('SEASON FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError(f"No images found for the specified season: {season}.")
+        else:
+            print_stats('SEASON FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
 
+        return self.tmp_df
+
+
     @validate_and_log
-    def cluster_filter(self, 
-                       algorithm: str = CONF.algorithm, 
+    def cluster_filter(self,
                        min_samples: int = CONF.min_samples, 
                        epsilon: int = CONF.epsilon,
                        commit: bool = True):
@@ -184,45 +243,55 @@ class RdrFilter():
         Perform clustering on image centroids using the specified algorithm.
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            algorithm (str): Clustering algorithm to use. One of: `hdbscan` or `dbscan`.
-            min_samples (int): Minimum numbers of points that can form a cluster.
-            epsilon (int): Epsilon value (neighborhood size) for DBSCAN / HDBSCAN.
-                           This should be provided in the distance units of the input data.
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            ValueError: If an unsupported algorithm is provided.
-            ValueError: If min_samples < 2.
+        Args
+        ----
+            min_samples : int
+                Minimum numbers of points that can form a cluster.
+
+            epsilon : int
+                Epsilon value (neighborhood size) for DBSCAN / HDBSCAN.
+                This should be provided in the distance units of the input data.
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If min_samples < 2.
+
+            ValueError
+                If no clusters are found with the specified parameters.
+
+        Returns
+        -------
+            self.tmp_df : pd.DataFrame
+                The filtered dataframe.
         """
+
         self.tmp_df = self.df.copy()
 
-        # choose and algorithm and perform density based clustering of image centroids
-        if algorithm == 'hdbscan':
-            try:
-                from hdbscan import HDBSCAN
-                clusterer = HDBSCAN(min_cluster_size=2, 
-                                    cluster_selection_epsilon = epsilon,
-                                    min_samples=min_samples, 
-                                    cluster_selection_method = 'leaf')
-                clusterer.fit(self.tmp_df[['CTR_X', 'CTR_Y']].values)
-                labels = clusterer.labels_
-            except ModuleNotFoundError:
-                print('''Module not pre-installed. Before calling again, run: 
-                      $ conda install conda-forge::hdbscan''')
-        elif algorithm == 'dbscan':
-            labels, _ = DBSCAN(self.tmp_df[['CTR_X', 'CTR_Y']].values, 
-                               min_samples = min_samples,
-                               eps = epsilon)
+        labels, _ = DBSCAN(
+            self.tmp_df[['CTR_X', 'CTR_Y']].values, 
+            min_samples=min_samples, 
+            eps=epsilon
+        )
 
         # create a new CLUSTER column & discard outlier images
         self.tmp_df['CLUSTER']  = labels
         self.tmp_df = self.tmp_df[self.tmp_df['CLUSTER'] != -1]
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('CLUSTER FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError("No clusters found. Try changing the clustering parameters.")
+        else:
+            print_stats('CLUSTER FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
+
+        return self.tmp_df
+
 
     @validate_and_log
     def my_filter(self, 
@@ -234,17 +303,40 @@ class RdrFilter():
         Filter clusters based on the sequence of unique Mars Year (MY) it contains.
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            min_years (int): Minimum number of unique Mars Years to be present in a cluster.
-            mys (list[int]): Specific Mars Years that must be present.
-            consecutive (bool): Whether the years must be consecutive.
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            ValueError: If min_years < 2.
-            Exception: If the current filter is applied before cluster_filter().
-        """
-        self._assert_cluster()
+        Args
+        ----
+            min_years : int
+                Minimum number of unique Mars Years to be present in a cluster.
 
+            mys : list[int]
+                Specific Mars Years that must be present.
+
+            consecutive : bool
+                Whether the years must be consecutive.
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If min_years < 2.
+
+            ValueError
+                If no clusters satisfy the Mars Year filtering criteria.
+
+            RuntimeError
+                If the current filter is applied before cluster_filter().
+
+        Returns
+        -------
+            self.tmp_df : pd.DataFrame
+                The filtered dataframe.
+        """
+
+        if 'CLUSTER' not in self.df.columns:
+            raise RuntimeError("Current filter can't be applied before cluster_filter()")
+    
         # convert UTC time to Mars Year (MY). current range of MY is 27-35*
         self.tmp_df = self.df.copy()
         self.tmp_df['MY'] = self.tmp_df['OBSERVATION_START_TIME'].apply(utc2my)
@@ -267,10 +359,16 @@ class RdrFilter():
         self.tmp_df = self.tmp_df[self.tmp_df.apply(lambda row: row['MY'] in valid_clusters.get(row['CLUSTER'], []), axis=1)]
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('MY FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError("No clusters found. Try changing the Mars Year filtering parameters.")
+        else:
+            print_stats('YEAR FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
+
+        return self.tmp_df
+
 
     @validate_and_log
     def keyword_filter(self, 
@@ -280,13 +378,30 @@ class RdrFilter():
         Filter clusters based on the presence of specific keywords in the RATIONALE_DESC column.
         Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            keywords (list[str]): List of keywords to filter by.
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            Exception: If the current filter is applied before cluster_filter().
+        Args
+        ----
+            keywords : list[str]
+                List of keywords to filter by.
+
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If no clusters satisfy the keyword filtering criteria.
+
+            RuntimeError
+                If the current filter is applied before cluster_filter().
+
+        Returns
+        -------
+            self.tmp_df : pd.DataFrame
+                The filtered dataframe.
         """
-        self._assert_cluster()
+
+        if 'CLUSTER' not in self.df.columns:
+            raise RuntimeError("Current filter can't be applied before cluster_filter()")
 
         self.tmp_df = self.df.copy()
 
@@ -297,26 +412,42 @@ class RdrFilter():
 
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('KEYWORD FILTER', f'{len(self.tmp_df)} images')
+        if self.tmp_df.empty:
+            raise ValueError("No clusters found. Try changing the keyword filtering parameters.")
+        else:
+            print_stats('KEYWORD FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
 
+        return self.tmp_df
+
+
     @validate_and_log
-    def allignment_filter(self, 
-                          commit: bool = True):
+    def alignment_filter(self, 
+                         commit: bool = True):
         """
         Filter and stack images based on the maximum overlapping area of their footprints.
         The function computes the intersection area of polygons defined by the image corners 
-        and selects the best stack of images per cluster. Validate and log the parameters 
-        into the `local_conf` dictionary. 
+        and selects the best (maximum overlap) stack of images per cluster. 
+        Validate and log the parameters into the `local_conf` dictionary. 
 
-        Args:
-            commit (bool): Whether to commit the changes to the main dataframe.
-        Raises:
-            Exception: If the current filter is applied before cluster_filter().
+        Args
+        ----
+            commit : bool
+                Whether to commit the changes to the main dataframe.
+
+        Raises
+        ------
+            ValueError
+                If no clusters satisfy the allignment filtering criteria.
+
+            RuntimeError
+                If the current filter is applied before cluster_filter().
         """
-        self._assert_cluster()
+
+        if 'CLUSTER' not in self.df.columns:
+            raise RuntimeError("Current filter can't be applied before cluster_filter()")
        
         self.tmp_df = self.df.copy()
 
@@ -354,72 +485,70 @@ class RdrFilter():
 
         self.tmp_df.reset_index(drop=True, inplace=True)
 
-        print_stats('ALLIGNMENT FILTER', f'{len(self.tmp_df)} images') 
+        if self.tmp_df.empty:
+            raise ValueError("No clusters found. Try changing the allignment filtering parameters.")
+        else:
+            print_stats('ALLIGNMENT FILTER', f'{len(self.tmp_df)} images') 
 
         if commit:
             self.df = self.tmp_df.copy()
 
-    @validate_and_log
-    def visualize(self, 
-                  target: str, 
-                  engine: str, 
-                  filename: str):
-        """
-        Visualize the filtered images using the specified engine.
-        Only validate the parameters without loggin them.
+        return self.tmp_df
 
-        Args:
-            target (str): Target to visualize. One of: `img_rectangle`, `img_centroid`, `cluster_centroid`.
-            engine (str): Engine to use for visualization. One of: `pygmt`, `qgis`.
-            filename (str): Name of the output file.
-        Raises:
-            ValueError: If an unsupported target is provided.
-            ValueError: If an unsupported engine is provided.
-            Exception: If the current filter is applied before cluster_filter().
-        """
-        
-        if target == 'cluster_centroid':
-            if 'CLUSTER' in df.columns:
-                df = df.groupby('CLUSTER')[['CTR_LON', 'CTR_LAT', 'CTR_X', 'CTR_Y']].mean().reset_index()
-            else:
-                raise Exception("Cluster centroids can't be mapped before cluster_filter() is appplied")
-           
-        if engine == 'qgis':
-            self.mapper.use_qgis(self.tmp_df, target, filename)
-        elif engine == 'pygmt':
-            self.mapper.use_pygmt(self.tmp_df, target, filename)
 
     def save_df(self, filename: str = 'FILTERED'):
+        """
+        Save the current dataframe as a .TAB file in the specified directory.
+        Args
+        ----
+            filename : str
+                Name of the output file.
+        """
+
         savepath = os.path.join(self.idx_savedir, f"{filename}.TAB")
         self.df.to_csv(savepath, sep="\t", index=False)
 
+
     def download_images(self, 
-                        product_id: list[str] = None,
-                        cluster_id: int = None,
-                        reload: bool = False
-                        ) -> None:
+                        product_id: list[str] | None = None,
+                        cluster_id: int | None = None,
+                        savedir: Path = CONF.RDR_DIR,
+                        reload: bool = False):
         """
         Download the filtered images from the PDS server. If `product_id` is provided, 
         download images based on the product ID, else download based on the cluster ID.
   
-        Args:
-            product_id (list[str]): List of product IDs to download.
-            cluster_id (int): Cluster ID to download.
-            reload (bool): Forces download even if the file exists locally.
-        Raises:
-            ValueError: If neither `product_id` nor `cluster_id` is provided.
-            Exception: If retriveal by `cluster_id` is attempted before cluster_filter() is applied.
+        Args
+        ----
+            product_id : list[str]
+                List of product IDs to download.
+
+            cluster_id : int
+                Cluster ID to download.
+
+            reload : bool
+                Forces download even if the file exists locally.
+
+        Raises
+        ------
+            ValueError
+                If neither `product_id` nor `cluster_id` is provided.
+
+            RuntimeError
+                If retriveal by `cluster_id` is attempted before cluster_filter() is applied.
         """
 
-        if not product_id and not cluster_id:
-            raise ValueError("At least one of `product_id` or `cluster_id` must be provide")
-        elif product_id:
+        if product_id:
             rdr_paths = self.df[self.df['PRODUCT_ID'].isin(product_id)]['FILE_NAME_SPECIFICATION'].tolist()
         elif cluster_id:
-            self._assert_cluster()
-            rdr_paths = self.df[self.df['CLUSTER'] == cluster_id]['FILE_NAME_SPECIFICATION'].tolist()
-        
-        download_from_pds(self.url, rdr_paths, self.rdr_savedir, reload)
+            if 'CLUSTER' not in self.df.columns:
+                raise RuntimeError("Can't download by cluster_id before cluster_filter() is applied")
+            else:
+                rdr_paths = self.df[self.df['CLUSTER'] == cluster_id]['FILE_NAME_SPECIFICATION'].tolist()
+        else:
+            raise ValueError("At least one of `product_id` or `cluster_id` must be provided")
+
+        download_from_pds(self.url, rdr_paths, savedir, reload)
 
 
 if __name__ == '__main__':

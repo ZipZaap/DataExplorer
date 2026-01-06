@@ -34,7 +34,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
 ```graphql
 ├───configs/
-│   ├──config.yaml ---------------------- # File with defaults parameters
+│   ├──config.yaml ---------------------- # File with default parameters
 │   ├──config_parser.py ----------------- # Defines Config() class which stores the defaults
 │   └──validators.py -------------------- # Defines validation logic and logging behavior
 |
@@ -63,27 +63,28 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
     ```python
     from Core.filter import RdrFilter
+    from Core.visualize import Mapper
 
-    # initialize the class instance
+    # initialize the class instances
     explorer = RdrFilter()
+    mapper = Mapper()
 
-    # load df and perfrom latitude filtering without commiting the changes
-    explorer.load_df()
-    explorer.latitude_filter(commit = False)
+    # perfrom latitude filtering without commiting the changes
+    df = explorer.latitude_filter(commit=False)
 
     # visualize image footprints with PyGMT and image centroids with QGIS
-    explorer.visualize(engine = 'pygmt', target = 'img_rectangle', filename = 'allignment_flt')
-    explorer.visualize(engine = 'qgis', target = 'img_centroid', filename = 'allignment_flt')
+    mapper.visualize(df, engine='pygmt', target='img_rectangle', title='allignment_flt')
+    mapper.visualize(df, engine='qgis', target='img_centroid', title='allignment_flt')
 
     # filter again, this time using custom LAT and saving the changes
-    explorer.latitude_filter(min_lat = 80)
+    explorer.latitude_filter(min_lat = 80);
 
-    # apply the rest of the filters with their default parameters
-    explorer.scale_filter()
-    explorer.season_filter()
-    explorer.cluster_filter()
-    explorer.my_filter()
-    explorer.allignment_filter()
+    # apply the rest of the filters with their default parameters; suppress the output
+    explorer.scale_filter();
+    explorer.season_filter();
+    explorer.cluster_filter();
+    explorer.my_filter();
+    explorer.allignment_filter();
 
     # Show the logged parameters and save the filtered DataFrame
     print(explorer.local_conf)

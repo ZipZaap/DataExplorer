@@ -3,7 +3,10 @@
 DATA_DIR: 'data'
 
 URL: 'https://hirise-pds.lpl.arizona.edu/PDS'
-PATH2IDX: ['INDEX/RDRCUMINDEX.TAB','INDEX/RDRCUMINDEX.LBL']
+PATH2IDX:  [
+    'INDEX/RDRCUMINDEX.TAB',
+    'INDEX/RDRCUMINDEX.LBL'
+]
 
 ### FILTERS
 # basic
@@ -22,11 +25,10 @@ mys: []
 consecutive: False
 
 # clustering
-algorithm: 'dbscan'
 min_samples: 2
 epsilon: 2000
 
-# Sequence
+# Filter sequence
 filter_sequence: [
     "load_df",
     "latitude_filter",

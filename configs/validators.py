@@ -14,10 +14,6 @@ RULES = {
         lambda x: x >= 2,
         "Value out of range! At least 2 unique mars years required to retain a cluster"
     ),
-    'algorithm': (
-        lambda x: x in ['hdbscan', 'dbscan'],
-        "Invalid algorithm! Choose one of: `hdbscan` or `dbscan`."
-    ),
     'scale': (
         lambda x: x in (0.25, 0.5, 1),
         "Invalid scale! Choose one of: 0.25, 0.5 or 1."
@@ -42,11 +38,15 @@ def run_tests(params):
     """
     Runs validation tests on given parameters.
 
-    Args:
-        params (dict): A dictionary mapping parameter names to their values.
+    Args
+    ----
+        params : dict
+            A dictionary mapping parameter names to their values.
 
-    Raises:
-        ValueError: If a parameter fails its validation test.
+    Raises
+    ------
+        ValueError
+            If a parameter fails its validation test.
     """
     for name, (test, msg) in RULES.items():
         if name in params and not test(params[name]):
@@ -60,15 +60,20 @@ def validate_and_log(X):
     defined rules before executing. Otherwise, assumes X is a dict and 
     directly runs validation.
 
-    Args:
-        X (callable or dict): Function to be decorated or dictionary
-                              of parameters to validate.
+    Args
+    ----
+        X : callable | dict
+            Function to be decorated or dictionary of parameters to validate.
 
-    Returns:
-        The wrapped function if X is callable, otherwise None.
+    Returns
+    -------
+        X : callable | None
+            The wrapped function if X is callable, otherwise None.
 
-    Raises:
-        ValueError: If any validation test fails.
+    Raises
+    ------
+        ValueError
+            If any validation test fails.
     """
     if callable(X):
         @functools.wraps(X)
