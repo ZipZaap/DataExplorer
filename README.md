@@ -83,7 +83,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     index.scale_filter();
     index.season_filter();
     index.cluster_filter();
-    index.my_filter();
+    index.temporal_filter();
     index.allignment_filter();
 
     # Show the logged parameters and save the filtered DataFrame
