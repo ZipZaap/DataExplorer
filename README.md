@@ -139,9 +139,9 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 The filters can be divided by type into two categories: those that operate on separate images and those that operate on clusters. In the example workflow below the cyan rectangles represent the footprints of individual images, and the purple circles - the cluster centroids:
 
 | Type | [1] Latitude filter | [2] Scale filter | [3] Season filter |
-| --- | --- | --- | --- |
+| :---: | :---: | :---: | :---: |
 |`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") |
-|| [4] Cluster filter | [5] Keyword filter | [6] Temporal filter  |
+|| **[4] Cluster filter** | **[5] Keyword filter** | **[6] Temporal filter**  |
 |`CLUSTER`| ![Alt text](figures/cluster_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/my_flt.png "image title") |
 
 > [!TIP]
