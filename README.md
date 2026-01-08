@@ -39,8 +39,8 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 │   └──validators.py -------------------- # Defines validation logic and logging behavior
 |
 ├───Core/
-│   ├──filter.py ------------------------ # Image filtering tools
-│   ├──mapper.py ------------------------ # Tools for visualiztion in QGIS/PyGMT
+│   ├──mars_index.py -------------------- # Image filtering tools
+│   ├──mars_plotter.py ------------------ # Tools for visualiztion in QGIS/PyGMT
 │   └──util.py--------------------------- # Misc utility functions
 |
 ├───data/
@@ -62,36 +62,36 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 1. **As module import**
 
     ```python
-    from Core.filter import RdrFilter
-    from Core.visualize import Mapper
+    from Core.mars_index import ImageIndex
+    from Core.mars_plotter import MapPlotter
 
     # initialize the class instances
-    explorer = RdrFilter()
-    mapper = Mapper()
+    index = ImageIndex()
+    plotter = MapPlotter()
 
     # perfrom latitude filtering without commiting the changes
-    df = explorer.latitude_filter(commit=False)
+    df = index.latitude_filter(commit=False)
 
     # visualize image footprints with PyGMT and image centroids with QGIS
-    mapper.visualize(df, engine='pygmt', target='img_rectangle', title='allignment_flt')
-    mapper.visualize(df, engine='qgis', target='img_centroid', title='allignment_flt')
+    plotter.visualize(df, engine='pygmt', target='img_rectangle', title='allignment_flt')
+    plotter.visualize(df, engine='qgis', target='img_centroid', title='allignment_flt')
 
     # filter again, this time using custom LAT and saving the changes
-    explorer.latitude_filter(min_lat = 80);
+    index.latitude_filter(min_lat = 80);
 
     # apply the rest of the filters with their default parameters; suppress the output
-    explorer.scale_filter();
-    explorer.season_filter();
-    explorer.cluster_filter();
-    explorer.my_filter();
-    explorer.allignment_filter();
+    index.scale_filter();
+    index.season_filter();
+    index.cluster_filter();
+    index.my_filter();
+    index.allignment_filter();
 
     # Show the logged parameters and save the filtered DataFrame
-    print(explorer.local_conf)
-    explorer.save_df()
+    print(index.local_conf)
+    index.save_df()
 
     # (Optionally) download the .JP2 products from the HiRISE archive
-    explorer.download_images(cluster_id = 2, reload = True)
+    index.download_images(cluster_id = 2, reload = True)
     ```
 
 2. **As standalone script**
@@ -112,7 +112,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 | `season_filter` | Performs seasonal filtering by retaining images captured at solar longitudes corresponding to the specified season. |
 | `cluster_filter` | Performs density-based filtering by retaining only those images that have other images in their immediate proximity. The clustering is performed on map-projected image centroids. The resulting grouping represents the imaging hotspots.|
 | `keyword_filter` | Performs semantic filtering, based on the rationale description associated with HiRISE products. This operation is performed at the cluster level, i.e. if any image within a cluster contains a user-defined keyword in its description, the entire cluster is retained.|
-| `my_filter` | Performs temporal filtering by only retaining clusters that either contain a specified number of (optionally consecuitive) unique mars years, or include a user-defined mars year sequence. This step helps to isolate locations with multi-year image coverage. |
+| `temporal_filter` | Performs temporal filtering by only retaining clusters that either contain a specified number of (optionally consecuitive) unique mars years, or include a user-defined mars year sequence. This step helps to isolate locations with multi-year image coverage. |
 | `allignment_filter` | Performs alignment filtering by retaining only one image per unique mars year within each cluster. The filter evaluates all possible combinations of images and selects the stack with the greatest area overlap. |
 
 > [!TIP]
@@ -129,7 +129,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
  'season_filter': {'season': 'Northern summer'},
  'cluster_filter': {'algorithm': 'dbscan', 'min_samples': 2, 'epsilon': 2000},
  'keyword_filter': {'keywords': ['scarp']},
- 'my_filter': {'min_years': 2, 'mys': [], 'consecutive': False},
+ 'temporal_filter': {'min_years': 2, 'mys': [], 'consecutive': False},
  'allignment_filter': {}
 }
 ```
@@ -141,7 +141,7 @@ The filters can be divided by type into two categories: those that operate on se
 | Type | [1] Latitude filter | [2] Scale filter | [3] Season filter |
 | --- | --- | --- | --- |
 |`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") |
-|| **[4] Cluster filter** | **[5] Keyword filter** | **[6] Mars year filter**  |
+|| [4] Cluster filter | [5] Keyword filter | [6] Temporal filter  |
 |`CLUSTER`| ![Alt text](figures/cluster_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/my_flt.png "image title") |
 
 > [!TIP]

@@ -10,7 +10,7 @@ from configs.config_parser import Config
 
 CONF = Config('configs/config.yaml')
 
-class Mapper:
+class MapPlotter:
     """
     Class for generating and displaying maps using PyGMT.
     """

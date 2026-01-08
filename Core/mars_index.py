@@ -12,7 +12,7 @@ from .util import arc2psp, utc2my, is_sequence, download_from_pds, print_stats
 
 CONF = Config('configs/config.yaml')
 
-class RdrFilter():
+class ImageIndex():
     
     def __init__(self, 
                  url: str = CONF.URL, 
@@ -294,7 +294,7 @@ class RdrFilter():
 
 
     @validate_and_log
-    def my_filter(self, 
+    def temporal_filter(self, 
                   min_years: int = CONF.min_years, 
                   mys: list[int] = CONF.mys, 
                   consecutive: bool = CONF.consecutive,
@@ -552,10 +552,10 @@ class RdrFilter():
 
 
 if __name__ == '__main__':
-    explorer = RdrFilter()
+    index = ImageIndex()
 
     if CONF.filter_sequence:
         for filter in CONF.filter_sequence:
-            getattr(explorer, filter)()
+            getattr(index, filter)()
     else:
         raise ValueError('Define a non-empty filter_sequence in `configs.yaml`.')

@@ -35,8 +35,8 @@ filter_sequence: [
     "scale_filter",
     "season_filter",
     "cluster_filter",
-    "my_filter",
-    "allignment_filter",
+    "temporal_filter",
+    "alignment_filter",
     "save_df"
 ]
 
