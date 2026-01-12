@@ -109,13 +109,41 @@ def utc2my(ot: str) -> int:
     return mars_year
 
 
-def is_sequence(sequence: np.ndarray, 
-                min_length: int
-                ) -> list:
-    """
-    Identify a subsequence of consecutive integers within the given sequence 
-    that meets the minimum length requirement.
+# def is_sequence(sequence: np.ndarray, 
+#                 min_length: int
+#                 ) -> list:
+#     """
+#     Identify a subsequence of consecutive integers within the given sequence 
+#     that meets the minimum length requirement.
 
+#     Args
+#     ----
+#         sequence : np.ndarray
+#             An array of integers.
+            
+#         min_length : int
+#             The minimum consecutive sequence length required.
+
+#     Returns
+#     -------
+#         result : list
+#             A list containing the longest subsequence found that meets or exceeds min_length.
+#     """
+#     sorted_seq = sorted(sequence.tolist())    
+#     result = []
+#     start = 0
+
+#     for i in range(1, len(sorted_seq) + 1):
+#         if i == len(sorted_seq) or sorted_seq[i] != sorted_seq[i - 1] + 1:
+#             if i - start >= min_length:
+#                 result.extend(sorted_seq[start:i])
+#             start = i
+#     return result
+
+def is_sequence(sequence: np.ndarray, min_length: int) -> list[int]:
+    """
+    Identify all integers belonging to consecutive subsequences that meet the minimum length.
+    
     Args
     ----
         sequence : np.ndarray
@@ -129,16 +157,26 @@ def is_sequence(sequence: np.ndarray,
         result : list
             A list containing the longest subsequence found that meets or exceeds min_length.
     """
-    sorted_seq = sorted(sequence.tolist())    
-    result = []
-    start = 0
+    if len(sequence) == 0:
+        return []
 
-    for i in range(1, len(sorted_seq) + 1):
-        if i == len(sorted_seq) or sorted_seq[i] != sorted_seq[i - 1] + 1:
-            if i - start >= min_length:
-                result.extend(sorted_seq[start:i])
-            start = i
-    return result
+    # # Sort and remove duplicates to ensure consecutiveness checks work correctly
+    # # e.g., [1, 1, 2] should count as consecutive, not broken.
+    unique_seq = np.unique(sequence)
+    
+    # Find indices where the difference between neighbors is not 1 (breaks in sequence)
+    breaks = np.where(np.diff(unique_seq) != 1)[0] + 1
+    
+    # Split the array into consecutive chunks
+    sub_sequences = np.split(unique_seq, breaks)
+    
+    # Filter chunks meeting min_length and flatten into a single list
+    valid_years = [seq for seq in sub_sequences if len(seq) >= min_length]
+    
+    if not valid_years:
+        return []
+        
+    return np.concatenate(valid_years).tolist()
 
 
 def print_stats(x: str, 

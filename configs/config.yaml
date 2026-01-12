@@ -34,7 +34,7 @@ filter_sequence: [
     "latitude_filter",
     "scale_filter",
     "season_filter",
-    "cluster_filter",
+    "density_filter",
     "temporal_filter",
     "alignment_filter",
     "save_df"

@@ -82,7 +82,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     # apply the rest of the filters with their default parameters; suppress the output
     index.scale_filter();
     index.season_filter();
-    index.cluster_filter();
+    index.density_filter();
     index.temporal_filter();
     index.allignment_filter();
 
@@ -110,7 +110,7 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 | `latitude_filter` | Performs location-based filtering by retaining images acquired above a given latitude.|
 | `scale_filter` | Performs resolution-based filtering by retaining images acquired with a given camera map scale setting. |
 | `season_filter` | Performs seasonal filtering by retaining images captured at solar longitudes corresponding to the specified season. |
-| `cluster_filter` | Performs density-based filtering by retaining only those images that have other images in their immediate proximity. The clustering is performed on map-projected image centroids. The resulting grouping represents the imaging hotspots.|
+| `density_filter` | Performs density-based filtering by retaining only those images that have other images in their immediate proximity. The clustering is performed on map-projected image centroids. The resulting grouping represents the imaging hotspots.|
 | `keyword_filter` | Performs semantic filtering, based on the rationale description associated with HiRISE products. This operation is performed at the cluster level, i.e. if any image within a cluster contains a user-defined keyword in its description, the entire cluster is retained.|
 | `temporal_filter` | Performs temporal filtering by only retaining clusters that either contain a specified number of (optionally consecuitive) unique mars years, or include a user-defined mars year sequence. This step helps to isolate locations with multi-year image coverage. |
 | `allignment_filter` | Performs alignment filtering by retaining only one image per unique mars year within each cluster. The filter evaluates all possible combinations of images and selects the stack with the greatest area overlap. |
@@ -127,7 +127,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
  'latitude_filter': {'min_lat': 78},
  'scale_filter': {'scale': 0.25},
  'season_filter': {'season': 'Northern summer'},
- 'cluster_filter': {'algorithm': 'dbscan', 'min_samples': 2, 'epsilon': 2000},
+ 'density_filter': {'algorithm': 'dbscan', 'min_samples': 2, 'epsilon': 2000},
  'keyword_filter': {'keywords': ['scarp']},
  'temporal_filter': {'min_years': 2, 'mys': [], 'consecutive': False},
  'allignment_filter': {}
@@ -141,7 +141,7 @@ The filters can be divided by type into two categories: those that operate on se
 | Type | [1] Latitude filter | [2] Scale filter | [3] Season filter |
 | :---: | :---: | :---: | :---: |
 |`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") |
-|| **[4] Cluster filter** | **[5] Keyword filter** | **[6] Temporal filter**  |
+|| **[4] Density filter** | **[5] Keyword filter** | **[6] Temporal filter**  |
 |`CLUSTER`| ![Alt text](figures/cluster_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/my_flt.png "image title") |
 
 > [!TIP]

@@ -5,6 +5,7 @@ from pathlib import Path
 from dbscan import DBSCAN # type: ignore[reportAttributeAccessIssue]
 from functools import reduce
 from shapely.geometry import Polygon
+from shapely import intersection_all
 
 from configs.config_parser import Config
 from configs.validators import validate_and_log
@@ -235,7 +236,7 @@ class ImageIndex():
 
 
     @validate_and_log
-    def cluster_filter(self,
+    def density_filter(self,
                        min_samples: int = CONF.min_samples, 
                        epsilon: int = CONF.epsilon,
                        commit: bool = True):
@@ -295,10 +296,10 @@ class ImageIndex():
 
     @validate_and_log
     def temporal_filter(self, 
-                  min_years: int = CONF.min_years, 
-                  mys: list[int] = CONF.mys, 
-                  consecutive: bool = CONF.consecutive,
-                  commit: bool = True):
+                        min_years: int = CONF.min_years, 
+                        mys: list[int] = CONF.mys, 
+                        seq: bool = CONF.consecutive,
+                        commit: bool = True):
         """
         Filter clusters based on the sequence of unique Mars Year (MY) it contains.
         Validate and log the parameters into the `local_conf` dictionary. 
@@ -309,9 +310,9 @@ class ImageIndex():
                 Minimum number of unique Mars Years to be present in a cluster.
 
             mys : list[int]
-                Specific Mars Years that must be present.
+                Specific Mars Years that must be present. Overwrites `min_years`.
 
-            consecutive : bool
+            seq : bool
                 Whether the years must be consecutive.
 
             commit : bool
@@ -333,36 +334,41 @@ class ImageIndex():
             self.tmp_df : pd.DataFrame
                 The filtered dataframe.
         """
-
         if 'CLUSTER' not in self.df.columns:
             raise RuntimeError("Current filter can't be applied before cluster_filter()")
-    
+
         # convert UTC time to Mars Year (MY). current range of MY is 27-35*
         self.tmp_df = self.df.copy()
         self.tmp_df['MY'] = self.tmp_df['OBSERVATION_START_TIME'].apply(utc2my)
-        self.tmp_df.drop(['OBSERVATION_START_TIME'], axis = 1, inplace = True)
+        self.tmp_df.drop(['OBSERVATION_START_TIME'], axis=1, inplace=True)
 
-        valid_clusters = {}
+        # 1. Summarize: Get unique years per cluster
         cluster_summary = self.tmp_df.groupby('CLUSTER')['MY'].unique()
-
+        
+        # 2. Filter Logic: Identify valid (Cluster, Year) pairs
+        valid_clusters_map = []
         for cluster, years in cluster_summary.items():
-            if mys and set(mys).issubset(years):
-                valid_clusters[cluster] = years
-            else:
-                if len(years) >= min_years:
-                    if consecutive:
-                        if filtered_years := is_sequence(years, min_years):
-                            valid_clusters[cluster] = filtered_years
-                    else:
-                        valid_clusters[cluster] = years
-                    
-        self.tmp_df = self.tmp_df[self.tmp_df.apply(lambda row: row['MY'] in valid_clusters.get(row['CLUSTER'], []), axis=1)]
-        self.tmp_df.reset_index(drop=True, inplace=True)
+            valid_years_subset = []
+ 
+            if mys:
+                if set(mys).issubset(years):
+                    valid_years_subset = mys
+    
+            elif len(years) >= min_years:
+                if seq:
+                    valid_years_subset = is_sequence(years, min_years)
+                else:
+                    valid_years_subset = years.tolist()
+        
+            for y in valid_years_subset:
+                valid_clusters_map.append({'CLUSTER': cluster, 'MY': y})
 
-        if self.tmp_df.empty:
-            raise ValueError("No clusters found. Try changing the Mars Year filtering parameters.")
-        else:
+        # 3. Apply Filter: Inner merge automatically filters rows that don't match both Cluster and MY
+        if valid_clusters_map:
+            self.tmp_df = self.tmp_df.merge(pd.DataFrame(valid_clusters_map), on=['CLUSTER', 'MY'], how='inner')
             print_stats('YEAR FILTER', f'{len(self.tmp_df)} images')
+        else:
+            raise ValueError("No clusters found. Try changing the Mars Year filtering parameters.")
 
         if commit:
             self.df = self.tmp_df.copy()
@@ -424,63 +430,123 @@ class ImageIndex():
 
 
     @validate_and_log
-    def alignment_filter(self, 
-                         commit: bool = True):
+    def alignment_filter(self, commit: bool = True):
         """
-        Filter and stack images based on the maximum overlapping area of their footprints.
-        The function computes the intersection area of polygons defined by the image corners 
-        and selects the best (maximum overlap) stack of images per cluster. 
-        Validate and log the parameters into the `local_conf` dictionary. 
+        Filters images to find the stack with the maximum overlapping intersection area.
+        
+        This method groups images within each cluster by their time bin (derived from 'MY').
+        It then utilizes a Branch and Bound algorithm to select exactly one image per 
+        bin such that the intersection area of all selected images is maximized.
+
+        The algorithm uses two heuristics to optimize search speed:
+        1. Polygons within bins are sorted by area (largest first).
+        2. Bins are sorted by cardinality (fewest options first).
+
+        Prerequisites
+        -------------
+        The dataframe must contain:
+        - 'CLUSTER': Grouping identifier.
+        - 'MY': Temporal identifier used to rank and bin images.
+        - 'C1_X', 'C1_Y' ... 'C4_X', 'C4_Y': Coordinates for the 4 corners of the footprint.
 
         Args
         ----
-            commit : bool
+            commit (bool): 
                 Whether to commit the changes to the main dataframe.
+
+        Returns
+        -------
+            pd.DataFrame: 
+                The filtered dataframe containing only the selected images that form 
+                the best geometric stack.
 
         Raises
         ------
-            ValueError
-                If no clusters satisfy the allignment filtering criteria.
+            RuntimeError: 
+                If the 'CLUSTER' column is missing (filtering applied out of order).
 
-            RuntimeError
-                If the current filter is applied before cluster_filter().
+            ValueError: 
+                If the filtering results in an empty dataset (no valid intersections found).
         """
-
+        
         if 'CLUSTER' not in self.df.columns:
             raise RuntimeError("Current filter can't be applied before cluster_filter()")
-       
+        
         self.tmp_df = self.df.copy()
 
         filtered_ids = []
-        for cluster in self.tmp_df['CLUSTER'].unique():
-            cluster_df = self.tmp_df[self.tmp_df['CLUSTER'] == cluster]
+        for cluster in self.tmp_df.CLUSTER.unique():
+            cluster_df = self.tmp_df[self.tmp_df.CLUSTER == cluster].copy()
+            cluster_df['bin_id'] = cluster_df.MY.rank(method='dense').astype(int)
 
-            group_indices = [
-                cluster_df[cluster_df['MY'] == my].index.tolist()
-                for my in cluster_df['MY'].unique()
-            ]
-            
-            max_area = 0
-            best_stack = None
-            
-            for stack in itertools.product(*group_indices):
-               
-                polygons = [
-                    Polygon([
-                        (self.tmp_df.loc[idx][f'C{i}_X'], self.tmp_df.loc[idx][f'C{i}_Y'])
-                        for i in range(1,5)
-                    ]) 
-                    for idx in stack
-                ]
+            # 1. Create and bin polygons
+            bins = []
+            for _, group in cluster_df.groupby('bin_id'):
+                current_bin = []
+                for poly_id, row in group.iterrows():
+                    coords = [(row[f'C{i}_X'], row[f'C{i}_Y']) for i in range(1, 5)]
+                    current_bin.append((Polygon(coords), poly_id))
                 
-                intersection = reduce(lambda p1, p2: p1.intersection(p2), polygons)
-                if intersection.area > max_area:
-                    max_area = intersection.area
-                    best_stack = stack
-            
-            if best_stack is not None:
-                filtered_ids.extend(best_stack)
-        
+                # 2. Sort polygons within each bin by area (Heuristic: largest first)
+                current_bin.sort(key=lambda x: x[0].area, reverse=True)
+                bins.append(current_bin)
+
+            # 3. Sort bins by number of elements (Heuristic: fewest options first)
+            bins.sort(key=len)
+
+            # 4. Quick greedy search to set a good starting point
+            try:
+                greedy_start = intersection_all([b[0][0] for b in bins]).area
+                greedy_selection = [b[0][1] for b in bins]
+                best_result = {'area': greedy_start, 'selection': greedy_selection}
+            except Exception:
+                best_result = {'area': 0.0, 'selection': []}
+
+            # 5. Find the best intersection using "Branch and Bound" algorithm
+            def _search(depth, current_intersection, current_selection):
+                # --- BOUNDING (PRUNING) STEP ---
+                # If we have a valid intersection context (depth > 0)
+                if current_intersection is not None:
+                    
+                    # If the current intersection is empty, this branch is dead.
+                    if current_intersection.is_empty:
+                        return
+
+                    # PRUNING: If current area is already <= the best area found, this branch is also dead.
+                    if current_intersection.area <= best_result['area']:
+                        return
+
+                # --- BASE CASE ---
+                # We have selected one polygon from every bin
+                if depth == len(bins):
+                    current_area = current_intersection.area
+                    if current_area > best_result['area']:
+                        best_result['area'] = current_area
+                        best_result['selection'] = sorted(list(current_selection))
+                    return
+
+                # --- BRANCHING (RECURSIVE) STEP ---
+                # Iterate through candidates in the current bin
+                for poly, poly_id in bins[depth]:
+                    
+                    # If the candidate polygon itself is smaller than best_area,
+                    # the intersection will definitely be smaller too. Skip it.
+                    if poly.area <= best_result['area']:
+                        continue
+                    
+                    # Calculate new intersection
+                    if current_intersection is None:
+                        new_intersection = poly
+                    else:
+                        new_intersection = current_intersection.intersection(poly)
+                
+                    # Recursive call
+                    _search(depth + 1, new_intersection, current_selection + [poly_id])
+
+            # run the search
+            _search(0, None, [])
+            filtered_ids.extend(best_result['selection'])
+
         self.tmp_df = self.tmp_df.loc[filtered_ids]
 
         self.tmp_df.reset_index(drop=True, inplace=True)
