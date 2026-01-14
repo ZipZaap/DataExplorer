@@ -52,7 +52,8 @@ class MapPlotter:
     def visualize(self,
                   df: pd.DataFrame,
                   target: str, 
-                  engine: str, 
+                  color: str = "purple",
+                  engine: str = "pygmt", 
                   title: str | None = None):
         """
         Visualize the filtered images using the specified engine. 
@@ -64,7 +65,10 @@ class MapPlotter:
                 DataFrame containing the filtered images to visualize.
 
             target : str
-                Target to visualize. One of: `img_rectangle`, `img_centroid`, `cluster_centroid`.
+                Target to visualize. One of: `img_footprint`, `img_centroid`, `cluster`.
+
+            color : str
+                Target color.
 
             engine : str
                 Engine to use for visualization. One of: `pygmt`, `qgis`.
@@ -90,9 +94,9 @@ class MapPlotter:
         if df is None or df.empty:
             raise RuntimeError("Dataframe is empty, please apply some filter before visualization")
 
-        if target not in {'img_rectangle', 'img_centroid', 'cluster_centroid'}:
-            raise ValueError("Unsupported target! Choose one of: `img_rectangle`, `img_centroid`, `cluster_centroid`.")
-        elif target == 'cluster_centroid':
+        if target not in {'img_footprint', 'img_centroid', 'cluster'}:
+            raise ValueError("Unsupported target! Choose one of: `img_footpirnt`, `img_centroid`, `cluster`.")
+        elif target == 'cluster':
             if 'CLUSTER' not in df.columns:
                 raise RuntimeError("Cluster centroids can't be mapped before cluster_filter() is applied")
             df = df.groupby('CLUSTER')[['CTR_LON', 'CTR_LAT', 'CTR_X', 'CTR_Y']].mean().reset_index()
@@ -103,13 +107,14 @@ class MapPlotter:
             else:
                 raise ValueError("Please provide a title to save the GeoJSON file.")
         elif engine == 'pygmt':
-            self._use_pygmt(df, target, title)
+            self._use_pygmt(df, target, color, title)
         else:
             raise ValueError("Unsupported engine! Choose one of: `pygmt` or `qgis`.")
 
     def _use_pygmt(self,
                    df: pd.DataFrame,
                    target: str,
+                   color: str,
                    title: str | None):
         """
         Display a map with overlays based on the target and data provided.
@@ -121,7 +126,7 @@ class MapPlotter:
                 DataFrame containing coordinate data.
 
             target : str
-                Type of overlay. One of 'img_rectangle', 'img_centroid' or 'cluster_centroid'.
+                Type of overlay. One of 'img_footprint', 'img_centroid' or 'cluster'.
 
             title : str | None
                 Title of the output file (without extension).
@@ -149,13 +154,13 @@ class MapPlotter:
         )
         
         with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as tmp:
-            if target in ['img_centroid', 'cluster_centroid']:
+            if target in ['img_centroid', 'cluster']:
                 for _, row in df.iterrows():
                     tmp.write(">\n")
                     tmp.write(f"{row['CTR_LON']} {row['CTR_LAT']}\n")
                 tmp.flush()
                 style = "c0.3"
-            else: # target == 'img_rectangle':
+            else: # target == 'img_footprint':
                 for _, row in df.iterrows():
                     tmp.write(">\n")
                     tmp.write(f"{row['C1_LON']} {row['C1_LAT']}\n")
@@ -166,7 +171,7 @@ class MapPlotter:
                 style = None
            
             
-        fig.plot(data=tmp.name, fill="purple", pen="0.2p,black", style=style, transparency=20)
+        fig.plot(data=tmp.name, fill=color, pen="0.2p,black", style=style, transparency=20)
 
         if title:
             os.makedirs(self.pygmt_savedir, exist_ok=True)
@@ -188,14 +193,14 @@ class MapPlotter:
                 DataFrame containing coordinate and attribute data.
 
             target : str
-                Type of layer to generate. One of: `img_rectangle`, `img_centroid` or `cluster_centroid`.
+                Type of layer to generate. One of: `img_footprint`, `img_centroid` or `cluster`.
                 
             title : str
                 Title of the output file (without extension).
         """
         
         features = []
-        if target == 'img_rectangle':
+        if target == 'img_footprint':
             for idx, row in df.iterrows(): 
                 polygon = gj.Polygon([[(row[f"C{i}_X"], row[f"C{i}_Y"]) for i in [1,2,3,4,1]]])
                 features.append(gj.Feature(geometry=polygon, properties={"ID": idx, "Name": row.PRODUCT_ID}))
@@ -203,7 +208,7 @@ class MapPlotter:
             for idx, row in df.iterrows(): 
                 point = gj.Point((row['CTR_X'], row['CTR_Y']))
                 features.append(gj.Feature(geometry=point, properties={"ID": idx, "Name": row.PRODUCT_ID}))
-        elif target == 'cluster_centroid':
+        elif target == 'cluster':
             for idx, row in df.iterrows(): 
                 point = gj.Point((row['CTR_X'], row['CTR_Y']))
                 features.append(gj.Feature(geometry=point, properties={"CLUSTER": row.CLUSTER}))

@@ -28,8 +28,8 @@ RULES = {
         "Invalid engine! Choose one of: `pygmt` or `qgis`."
     ),
     'target': (
-        lambda x: x in ['img_rectangle', 'img_centroid', 'cluster_centroid'],
-        "Invalid target! Choose one of: `img_rectangle`, `img_centroid`, `cluster_centroid`."
+        lambda x: x in ['img_footprint', 'img_centroid', 'cluster'],
+        "Invalid target! Choose one of: `img_rectangle`, `img_centroid`, `cluster`."
     )
 }
 

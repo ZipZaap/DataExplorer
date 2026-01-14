@@ -286,7 +286,7 @@ class ImageIndex():
         if self.tmp_df.empty:
             raise ValueError("No clusters found. Try changing the clustering parameters.")
         else:
-            print_stats('CLUSTER FILTER', f'{len(self.tmp_df)} images')
+            print_stats('DENSITY FILTER', f'{len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
@@ -366,7 +366,7 @@ class ImageIndex():
         # 3. Apply Filter: Inner merge automatically filters rows that don't match both Cluster and MY
         if valid_clusters_map:
             self.tmp_df = self.tmp_df.merge(pd.DataFrame(valid_clusters_map), on=['CLUSTER', 'MY'], how='inner')
-            print_stats('YEAR FILTER', f'{len(self.tmp_df)} images')
+            print_stats('TEMPORAL FILTER', f'{len(self.tmp_df)} images')
         else:
             raise ValueError("No clusters found. Try changing the Mars Year filtering parameters.")
 
@@ -554,7 +554,7 @@ class ImageIndex():
         if self.tmp_df.empty:
             raise ValueError("No clusters found. Try changing the allignment filtering parameters.")
         else:
-            print_stats('ALLIGNMENT FILTER', f'{len(self.tmp_df)} images') 
+            print_stats('ALIGNMENT FILTER', f'{len(self.tmp_df)} images') 
 
         if commit:
             self.df = self.tmp_df.copy()

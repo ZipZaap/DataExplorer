@@ -10,8 +10,8 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 2. **DBSCAN Clustering for Imaging Hotspots**  
    Identify multi-year imaging hotspots using Density-Based Spatial Clustering of Applications with Noise ([DBSCAN](https://github.com/wangyiqiu/dbscan-python)). By grouping overlapping or closely spaced images, you can reveal areas of Mars with repeated HiRISE coverage.
 
-3. **Shapely-Based Stack Selection**  
-   Leverage the geometric capabilities of [Shapely](https://shapely.readthedocs.io/) to handle overlapping images. Automatically choose the best stacks from intersecting footprints and easily incorporate them into your data analysis or map displays.
+3. **Branch and Bound Stack Selection**  
+   Leverage the geometric capabilities of [Shapely](https://shapely.readthedocs.io/) and computational efficiency of the "Branch and Bound" algorithm to handle overlapping images. Automatically choose the best stacks from intersecting footprints and easily incorporate them into your data analysis or map displays.
 
 4. **Visualization with PyGMT and QGIS**  
    Explore and share your results via robust visualization tools. Plot clustered hotspots with [PyGMT](https://www.pygmt.org/) or import your data into [QGIS](https://qgis.org/) for advanced cartographic work and interactive spatial analysis.
@@ -73,8 +73,8 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
     df = index.latitude_filter(commit=False)
 
     # visualize image footprints with PyGMT and image centroids with QGIS
-    plotter.visualize(df, engine='pygmt', target='img_rectangle', title='allignment_flt')
-    plotter.visualize(df, engine='qgis', target='img_centroid', title='allignment_flt')
+    plotter.visualize(df, engine='pygmt', target='img_footprint', title='latitude_flt')
+    plotter.visualize(df, engine='qgis', target='img_centroid', title='latitude_flt')
 
     # filter again, this time using custom LAT and saving the changes
     index.latitude_filter(min_lat = 80);
@@ -138,11 +138,11 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
 
 The filters can be divided by type into two categories: those that operate on separate images and those that operate on clusters. In the example workflow below the cyan rectangles represent the footprints of individual images, and the purple circles - the cluster centroids:
 
-| Type | [1] Latitude filter | [2] Scale filter | [3] Season filter |
+| Type | [1] Latitude filter | [2] Season filter | [3] Scale filter |
 | :---: | :---: | :---: | :---: |
-|`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") |
+|`IMAGE`| ![Alt text](figures/latitude_flt.png "image title") | ![Alt text](figures/season_flt.png "image title") | ![Alt text](figures/scale_flt.png "image title") |
 || **[4] Density filter** | **[5] Keyword filter** | **[6] Temporal filter**  |
-|`CLUSTER`| ![Alt text](figures/cluster_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/my_flt.png "image title") |
+|`CLUSTER`| ![Alt text](figures/density_flt.png "image title") | ![Alt text](figures/keyword_flt.png "image title") | ![Alt text](figures/temporal_flt.png "image title") |
 
 > [!TIP]
 > Click on images to get a better look
