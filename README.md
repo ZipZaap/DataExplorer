@@ -43,11 +43,13 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 │   ├──mars_plotter.py ------------------ # Tools for visualiztion in QGIS/PyGMT
 │   └──util.py--------------------------- # Misc utility functions
 |
-├───data/
+├───results/
+|   ├───csv/ ---------------------------- # Storage for filtered dataframes
 │   ├───geojson/ ------------------------ # Storage for QGIS .geojson files
-│   ├───index/ -------------------------- # Storage for PDS .TAB & .LBL files
+│   ├───maps/ --------------------------- # Storage PyGMT .png visualizations
+|   ├───index/ -------------------------- # Storage for PDS .TAB & .LBL files
 |   ├───rdr/ ---------------------------- # Storage for downloaded .JP2 files
-│   └───maps/ --------------------------- # Storage for PyGMT .png files
+│   └───preview/ ------------------------ # Storage ofr preview .thumb.jpg files
 |
 ├───main.ipynb -------------------------- # Jupyter Notebook with examples
 ├───requirements.yml -------------------- # Core dependencies
@@ -63,35 +65,36 @@ This repository provides Python tools for filtering, retrieving, and mapping ima
 
     ```python
     from Core.mars_index import ImageIndex
-    from Core.mars_plotter import MapPlotter
 
-    # initialize the class instances
+    # initialize the class instance
     index = ImageIndex()
-    plotter = MapPlotter()
 
     # perfrom latitude filtering without commiting the changes
-    df = index.latitude_filter(commit=False)
+    index.latitude_filter(commit=False)
 
     # visualize image footprints with PyGMT and image centroids with QGIS
-    plotter.visualize(df, engine='pygmt', target='img_footprint', title='latitude_flt')
-    plotter.visualize(df, engine='qgis', target='img_centroid', title='latitude_flt')
+    index.show_on_map(engine='pygmt', target='img_footprint', title='latitude_flt')
+    index.show_on_map(engine='qgis', target='img_centroid', title='latitude_flt')
 
     # filter again, this time using custom LAT and saving the changes
-    index.latitude_filter(min_lat = 80);
+    index.latitude_filter(min_lat=80);
 
     # apply the rest of the filters with their default parameters; suppress the output
     index.scale_filter();
     index.season_filter();
     index.density_filter();
     index.temporal_filter();
-    index.allignment_filter();
 
-    # Show the logged parameters and save the filtered DataFrame
-    print(index.local_conf)
-    index.save_df()
+    # Map the remaining clusters with PyGMT
+    index.show_on_map('cluster', color='greenyellow')
 
-    # (Optionally) download the .JP2 products from the HiRISE archive
-    index.download_images(cluster_id = 2, reload = True)
+    # Choose a cluster to preview
+    index.show_preview(cluster_id=3)
+
+    # (Optionally) Choose an image to exlcude based on preview and
+    # download the .JP2 products from the HiRISE archive
+    exclude='ESP_123456_7890_RED'
+    index.download_images(cluster_id=3, exclude=exclude, allign=True, reload=False)
     ```
 
 2. **As standalone script**
@@ -129,8 +132,7 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
  'season_filter': {'season': 'Northern summer'},
  'density_filter': {'min_samples': 2, 'epsilon': 2000},
  'keyword_filter': {'keywords': ['scarp']},
- 'temporal_filter': {'min_years': 5, 'mys': [], 'consecutive': False},
- 'allignment_filter': {}
+ 'temporal_filter': {'min_years': 5, 'max_gap': 0, mys': []},
 }
 ```
 
