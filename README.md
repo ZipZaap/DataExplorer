@@ -127,9 +127,9 @@ In this example use-case we're looking to investigate the seasonal ice dynamics 
  'latitude_filter': {'min_lat': 78},
  'scale_filter': {'scale': 0.25},
  'season_filter': {'season': 'Northern summer'},
- 'density_filter': {'algorithm': 'dbscan', 'min_samples': 2, 'epsilon': 2000},
+ 'density_filter': {'min_samples': 2, 'epsilon': 2000},
  'keyword_filter': {'keywords': ['scarp']},
- 'temporal_filter': {'min_years': 2, 'mys': [], 'consecutive': False},
+ 'temporal_filter': {'min_years': 5, 'mys': [], 'consecutive': False},
  'allignment_filter': {}
 }
 ```

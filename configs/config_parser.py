@@ -38,9 +38,17 @@ class Config:
         """
         Set configuration paths based on the loaded configuration.
         """
-        # Default directories
+        # Centralized storage for all .JP2 files
         self.DATA_DIR: Path = Path(self.DATA_DIR)
-        self.QGIS_DIR: Path = self.DATA_DIR / "geojson"
-        self.IDX_DIR: Path = self.DATA_DIR / "index"
-        self.MAP_DIR: Path = self.DATA_DIR / "maps"
         self.RDR_DIR: Path = self.DATA_DIR / "rdr"
+        self.IDX_DIR: Path = self.DATA_DIR / "index"
+
+        # Package specific storage for filtering results
+        self.OUTPUT_DIR: Path = Path(self.OUTPUT_DIR)
+        self.QGIS_DIR: Path = self.OUTPUT_DIR / "geojson"
+        self.MAP_DIR: Path = self.OUTPUT_DIR / "maps"
+        self.CSV_DIR: Path = self.OUTPUT_DIR / "csv"
+        self.PREVIEW_DIR: Path = self.OUTPUT_DIR / "preview"
+
+        for path in [self.RDR_DIR, self.IDX_DIR, self.QGIS_DIR, self.MAP_DIR, self.CSV_DIR, self.PREVIEW_DIR]:
+            path.mkdir(parents=True, exist_ok=True)

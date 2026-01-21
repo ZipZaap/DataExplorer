@@ -1,15 +1,13 @@
 import os
-import itertools
 import pandas as pd
 from pathlib import Path
 from dbscan import DBSCAN # type: ignore[reportAttributeAccessIssue]
-from functools import reduce
-from shapely.geometry import Polygon
-from shapely import intersection_all
 
+from Core.mars_plotter import MapPlotter
 from configs.config_parser import Config
 from configs.validators import validate_and_log
-from .util import arc2psp, utc2my, is_sequence, download_from_pds, print_stats
+from .util import arc2psp, utc2my, is_sequence, download_from_pds,\
+                    print_stats, calculate_area, optimize_overlap
 
 CONF = Config('configs/config.yaml')
 
@@ -19,6 +17,9 @@ class ImageIndex():
                  url: str = CONF.URL, 
                  idx_path: list = CONF.PATH2IDX, 
                  idx_savedir: Path = CONF.IDX_DIR,
+                 rdr_savedir: Path = CONF.RDR_DIR,
+                 jpg_savedir: Path = CONF.PREVIEW_DIR,
+                 csv_savedir: Path = CONF.CSV_DIR,
                  columns: list[str] = CONF.columns,
                  red: bool = True):
         """
@@ -36,6 +37,12 @@ class ImageIndex():
 
             idx_savedir : Path
                 Directory to save the index files.
+            
+            rdr_savedir : Path
+                Directory to save the RDR files.
+            
+            csv_savedir : Path
+                Directory to save the .csv files.
 
             columns : list[str]
                 List of columns to keep in the dataframe.
@@ -43,14 +50,19 @@ class ImageIndex():
             red : bool
                 Whether to keep only the RED images (single-channel).
         """
+        # create a plotter
+        self.plotter = MapPlotter()
 
         # initialize paths & local configuration dictionary
         self.url = url
         self.idx_savedir = idx_savedir
+        self.rdr_savedir = rdr_savedir
+        self.jpg_savedir = jpg_savedir
+        self.csv_savedir = csv_savedir
         self.local_conf = {}
         
         # download index files if not present
-        download_from_pds(url, idx_path, idx_savedir)
+        download_from_pds(idx_path, url, idx_savedir)
 
         # load .tab
         lbl_path = idx_savedir / "RDRCUMINDEX.LBL"
@@ -125,8 +137,6 @@ class ImageIndex():
         if commit:
             self.df = self.tmp_df.copy()
 
-        return self.tmp_df
-
 
     @validate_and_log
     def scale_filter(self, 
@@ -169,8 +179,6 @@ class ImageIndex():
 
         if commit:
             self.df = self.tmp_df.copy()
-
-        return self.tmp_df
 
 
     @validate_and_log
@@ -232,8 +240,6 @@ class ImageIndex():
         if commit:
             self.df = self.tmp_df.copy()
 
-        return self.tmp_df
-
 
     @validate_and_log
     def density_filter(self,
@@ -281,24 +287,24 @@ class ImageIndex():
         # create a new CLUSTER column & discard outlier images
         self.tmp_df['CLUSTER']  = labels
         self.tmp_df = self.tmp_df[self.tmp_df['CLUSTER'] != -1]
+        self.tmp_df['CLUSTER'] = pd.factorize(self.tmp_df['CLUSTER'], sort=True)[0] + 1
         self.tmp_df.reset_index(drop=True, inplace=True)
 
         if self.tmp_df.empty:
             raise ValueError("No clusters found. Try changing the clustering parameters.")
         else:
-            print_stats('DENSITY FILTER', f'{len(self.tmp_df)} images')
+            print_stats('DENSITY FILTER', 
+                f'{len(self.tmp_df.CLUSTER.unique())} locations / {len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
 
-        return self.tmp_df
-
 
     @validate_and_log
     def temporal_filter(self, 
-                        min_years: int = CONF.min_years, 
                         mys: list[int] = CONF.mys, 
-                        seq: bool = CONF.consecutive,
+                        min_years: int = CONF.min_years, 
+                        max_gap: int = CONF.max_gap,
                         commit: bool = True):
         """
         Filter clusters based on the sequence of unique Mars Year (MY) it contains.
@@ -355,25 +361,24 @@ class ImageIndex():
                     valid_years_subset = mys
     
             elif len(years) >= min_years:
-                if seq:
-                    valid_years_subset = is_sequence(years, min_years)
-                else:
-                    valid_years_subset = years.tolist()
-        
+                valid_years_subset = is_sequence(years, min_years, max_gap)
+
             for y in valid_years_subset:
                 valid_clusters_map.append({'CLUSTER': cluster, 'MY': y})
 
         # 3. Apply Filter: Inner merge automatically filters rows that don't match both Cluster and MY
         if valid_clusters_map:
             self.tmp_df = self.tmp_df.merge(pd.DataFrame(valid_clusters_map), on=['CLUSTER', 'MY'], how='inner')
-            print_stats('TEMPORAL FILTER', f'{len(self.tmp_df)} images')
+            self.tmp_df['CLUSTER'] = pd.factorize(self.tmp_df['CLUSTER'], sort=True)[0] + 1
+            self.tmp_df.reset_index(drop=True, inplace=True)
+
+            print_stats('TEMPORAL FILTER', 
+                f'{len(self.tmp_df.CLUSTER.unique())} locations / {len(self.tmp_df)} images')
         else:
             raise ValueError("No clusters found. Try changing the Mars Year filtering parameters.")
 
         if commit:
             self.df = self.tmp_df.copy()
-
-        return self.tmp_df
 
 
     @validate_and_log
@@ -416,150 +421,102 @@ class ImageIndex():
             lambda group: group["RATIONALE_DESC"].str.contains(pattern).any()
         )
 
+        self.tmp_df['CLUSTER'] = pd.factorize(self.tmp_df['CLUSTER'], sort=True)[0] + 1
         self.tmp_df.reset_index(drop=True, inplace=True)
 
         if self.tmp_df.empty:
             raise ValueError("No clusters found. Try changing the keyword filtering parameters.")
         else:
-            print_stats('KEYWORD FILTER', f'{len(self.tmp_df)} images')
+            print_stats('KEYWORD FILTER', 
+                f'{len(self.tmp_df.CLUSTER.unique())} locations / {len(self.tmp_df)} images')
 
         if commit:
             self.df = self.tmp_df.copy()
 
-        return self.tmp_df
 
-
-    @validate_and_log
-    def alignment_filter(self, commit: bool = True):
+    def show_on_map(self,
+                    target: str, 
+                    engine: str = "pygmt", 
+                    color: str = "purple",
+                    title: str | None = None):
         """
-        Filters images to find the stack with the maximum overlapping intersection area.
-        
-        This method groups images within each cluster by their time bin (derived from 'MY').
-        It then utilizes a Branch and Bound algorithm to select exactly one image per 
-        bin such that the intersection area of all selected images is maximized.
-
-        The algorithm uses two heuristics to optimize search speed:
-        1. Polygons within bins are sorted by area (largest first).
-        2. Bins are sorted by cardinality (fewest options first).
-
-        Prerequisites
-        -------------
-        The dataframe must contain:
-        - 'CLUSTER': Grouping identifier.
-        - 'MY': Temporal identifier used to rank and bin images.
-        - 'C1_X', 'C1_Y' ... 'C4_X', 'C4_Y': Coordinates for the 4 corners of the footprint.
+        Visualize the filtered data on a map using the specified engine.
 
         Args
         ----
-            commit (bool): 
-                Whether to commit the changes to the main dataframe.
+            target : str
+                The type of data to visualize. 
+                Must be one of: 'img_footprint', 'img_centroid', 'cluster'.
 
-        Returns
-        -------
-            pd.DataFrame: 
-                The filtered dataframe containing only the selected images that form 
-                the best geometric stack.
+            engine : str
+                The visualization engine to use. One of: 'pygmt', 'qgis'.
+                Defaults to "pygmt".
+
+            color : str
+                Color of the plotted elements. Defaults to "purple".
+
+            title : str | None
+                Title of the plot. If provided, the plot is saved to a file.
+                If None, the plot is displayed interactively (PyGMT only).
 
         Raises
         ------
-            RuntimeError: 
-                If the 'CLUSTER' column is missing (filtering applied out of order).
+            RuntimeError
+                If the filtered dataframe is empty or None.
 
-            ValueError: 
-                If the filtering results in an empty dataset (no valid intersections found).
+            ValueError
+                If an unsupported target is provided.
+
+            RuntimeError
+                If 'cluster' target is selected but clustering has not been performed.
         """
-        
-        if 'CLUSTER' not in self.df.columns:
-            raise RuntimeError("Current filter can't be applied before cluster_filter()")
-        
-        self.tmp_df = self.df.copy()
 
-        filtered_ids = []
-        for cluster in self.tmp_df.CLUSTER.unique():
-            cluster_df = self.tmp_df[self.tmp_df.CLUSTER == cluster].copy()
-            cluster_df['bin_id'] = cluster_df.MY.rank(method='dense').astype(int)
-
-            # 1. Create and bin polygons
-            bins = []
-            for _, group in cluster_df.groupby('bin_id'):
-                current_bin = []
-                for poly_id, row in group.iterrows():
-                    coords = [(row[f'C{i}_X'], row[f'C{i}_Y']) for i in range(1, 5)]
-                    current_bin.append((Polygon(coords), poly_id))
-                
-                # 2. Sort polygons within each bin by area (Heuristic: largest first)
-                current_bin.sort(key=lambda x: x[0].area, reverse=True)
-                bins.append(current_bin)
-
-            # 3. Sort bins by number of elements (Heuristic: fewest options first)
-            bins.sort(key=len)
-
-            # 4. Quick greedy search to set a good starting point
-            try:
-                greedy_start = intersection_all([b[0][0] for b in bins]).area
-                greedy_selection = [b[0][1] for b in bins]
-                best_result = {'area': greedy_start, 'selection': greedy_selection}
-            except Exception:
-                best_result = {'area': 0.0, 'selection': []}
-
-            # 5. Find the best intersection using "Branch and Bound" algorithm
-            def _search(depth, current_intersection, current_selection):
-                # --- BOUNDING (PRUNING) STEP ---
-                # If we have a valid intersection context (depth > 0)
-                if current_intersection is not None:
-                    
-                    # If the current intersection is empty, this branch is dead.
-                    if current_intersection.is_empty:
-                        return
-
-                    # PRUNING: If current area is already <= the best area found, this branch is also dead.
-                    if current_intersection.area <= best_result['area']:
-                        return
-
-                # --- BASE CASE ---
-                # We have selected one polygon from every bin
-                if depth == len(bins):
-                    current_area = current_intersection.area
-                    if current_area > best_result['area']:
-                        best_result['area'] = current_area
-                        best_result['selection'] = sorted(list(current_selection))
-                    return
-
-                # --- BRANCHING (RECURSIVE) STEP ---
-                # Iterate through candidates in the current bin
-                for poly, poly_id in bins[depth]:
-                    
-                    # If the candidate polygon itself is smaller than best_area,
-                    # the intersection will definitely be smaller too. Skip it.
-                    if poly.area <= best_result['area']:
-                        continue
-                    
-                    # Calculate new intersection
-                    if current_intersection is None:
-                        new_intersection = poly
-                    else:
-                        new_intersection = current_intersection.intersection(poly)
-                
-                    # Recursive call
-                    _search(depth + 1, new_intersection, current_selection + [poly_id])
-
-            # run the search
-            _search(0, None, [])
-            filtered_ids.extend(best_result['selection'])
-
-        self.tmp_df = self.tmp_df.loc[filtered_ids]
-
-        self.tmp_df.reset_index(drop=True, inplace=True)
-
-        if self.tmp_df.empty:
-            raise ValueError("No clusters found. Try changing the allignment filtering parameters.")
+        if self.tmp_df is None or self.tmp_df.empty:
+            raise RuntimeError("Dataframe is empty, please apply filters before visualization")
         else:
-            print_stats('ALIGNMENT FILTER', f'{len(self.tmp_df)} images') 
+            plot_df = self.tmp_df.copy()
 
-        if commit:
-            self.df = self.tmp_df.copy()
+        if target not in {'img_footprint', 'img_centroid', 'cluster'}:
+            raise ValueError("Unsupported target! Choose one of: `img_footpirnt`, `img_centroid`, `cluster`.")
+        elif target == 'cluster':
+            if 'CLUSTER' not in plot_df.columns:
+                raise RuntimeError("Cluster centroids can't be mapped before cluster_filter() is applied")
+            plot_df = plot_df.groupby('CLUSTER')[['CTR_LON', 'CTR_LAT', 'CTR_X', 'CTR_Y']].mean().reset_index()
 
-        return self.tmp_df
+        self.plotter.show_on_map(plot_df, target, color, engine, title)
+
+
+    def show_preview(self, cluster_id: int):
+        """
+        Display a grid of thumbnail previews for a specific cluster.
+
+        This method downloads the thumbnail images for the specified cluster 
+        and displays them organized by Mars Year using the MapPlotter.
+
+        Args
+        ----
+            cluster_id : int
+                The ID of the cluster to visualize.
+
+        Raises
+        ------
+            RuntimeError
+                If clustering has not yet been performed (i.e., density_filter() was not called).
+        """
+
+        if 'CLUSTER' not in self.df.columns:
+            raise RuntimeError("Can't show a preview of a cluster before density_filter() is applied")
+        
+        # get pds relative thumbnail paths
+        preview_df = self.df[self.df.CLUSTER == cluster_id].copy()
+        filepaths = preview_df.FILE_NAME_SPECIFICATION.tolist()
+        filepaths = [f"EXTRAS/{p.replace('.JP2', '.thumb.jpg')}" for p in filepaths]
+
+        # download thumbnails
+        download_from_pds(filepaths, self.url, self.jpg_savedir, False)
+
+        # display thumbnails arragned by Mars Year
+        self.plotter.show_preview(preview_df, self.jpg_savedir)
 
 
     def save_df(self, filename: str = 'FILTERED'):
@@ -576,45 +533,62 @@ class ImageIndex():
 
 
     def download_images(self, 
-                        product_id: list[str] | None = None,
-                        cluster_id: int | None = None,
-                        savedir: Path = CONF.RDR_DIR,
+                        cluster_id: int,
+                        exclude: list[str] = [],
+                        allign: bool = True,
                         reload: bool = False):
         """
-        Download the filtered images from the PDS server. If `product_id` is provided, 
-        download images based on the product ID, else download based on the cluster ID.
-  
+        Download full-scale images for a specific cluster from the PDS server.
+
+        This method filters the dataframe for a given `cluster_id`, optionally
+        excluding specified product IDs. It can also perform an alignment step
+        to select the stack of images with the maximum overlapping area.
+        
+        A CSV file containing metadata of the images to be downloaded is saved,
+        and then the full-scale .JP2 products are retrieved.
+
         Args
         ----
-            product_id : list[str]
-                List of product IDs to download.
-
             cluster_id : int
-                Cluster ID to download.
+                The ID of the cluster to download images for.
 
-            reload : bool
-                Forces download even if the file exists locally.
+            exclude : list[str], optional
+                A list of 'PRODUCT_ID's to exclude from the download. 
+
+            allign : bool, optional
+                If True, optimizes the image selection within the cluster to 
+                maximize the overlapping area. 
+
+            reload : bool, optional
+                If True, forces download even if the file already exists locally. 
 
         Raises
         ------
-            ValueError
-                If neither `product_id` nor `cluster_id` is provided.
-
             RuntimeError
-                If retriveal by `cluster_id` is attempted before cluster_filter() is applied.
+                If clustering has not yet been performed (i.e., density_filter() was not called).
         """
 
-        if product_id:
-            rdr_paths = self.df[self.df['PRODUCT_ID'].isin(product_id)]['FILE_NAME_SPECIFICATION'].tolist()
-        elif cluster_id:
-            if 'CLUSTER' not in self.df.columns:
-                raise RuntimeError("Can't download by cluster_id before cluster_filter() is applied")
-            else:
-                rdr_paths = self.df[self.df['CLUSTER'] == cluster_id]['FILE_NAME_SPECIFICATION'].tolist()
-        else:
-            raise ValueError("At least one of `product_id` or `cluster_id` must be provided")
+        if 'CLUSTER' not in self.df.columns:
+            raise RuntimeError("Can't download by cluster_id before cluster_filter() is applied")
+        
+        self.tmp_df = self.df[self.df['CLUSTER'] == cluster_id].copy()
+        
+        if exclude:
+            self.tmp_df = self.tmp_df[~self.tmp_df['PRODUCT_ID'].isin(exclude)]
 
-        download_from_pds(self.url, rdr_paths, savedir, reload)
+        if allign:
+            self.tmp_df = optimize_overlap(self.tmp_df)
+        
+        # calculate area
+        self.tmp_df = calculate_area(self.tmp_df)
+        self.tmp_df.to_csv(os.path.join(self.csv_savedir, f"cid_{cluster_id}.csv"), sep=",", index=False)
+
+        # get pds relative filepaths
+        filepaths = self.tmp_df.FILE_NAME_SPECIFICATION.tolist()
+
+        # retrieve full-scale .jp2 products
+        download_from_pds(filepaths, self.url, self.rdr_savedir, reload)
+
 
 
 if __name__ == '__main__':

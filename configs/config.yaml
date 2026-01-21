@@ -1,6 +1,7 @@
 ---
 ### PATHS
-DATA_DIR: 'data'
+DATA_DIR: 'D:/DataStorage/HiRISE'
+OUTPUT_DIR: 'results'
 
 URL: 'https://hirise-pds.lpl.arizona.edu/PDS'
 PATH2IDX:  [
@@ -21,8 +22,8 @@ season: 'Northern summer'
 
 # temporal stacks
 min_years: 5
+max_gap: 0
 mys: []
-consecutive: False
 
 # clustering
 min_samples: 2
